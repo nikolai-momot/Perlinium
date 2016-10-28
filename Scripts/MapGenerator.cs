@@ -18,7 +18,8 @@ public class MapGenerator : MonoBehaviour {
 	public Vector2 offset;
 	
 	public bool autoUpdate;
-	
+	public bool useFalloff;
+
 	public TerrainType[] regions;
 	private float[,] falloffMap;
 
@@ -44,7 +45,13 @@ public class MapGenerator : MonoBehaviour {
 		Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
 		for (int y = 0; y < mapChunkSize; y++) {
 			for (int x = 0; x < mapChunkSize; x++) {
+
+				if (useFalloff) {
+					noiseMap [x, y] = Mathf.Clamp01(noiseMap [x, y] - falloffMap [x, y]);
+				}
+
 				float currentHeight = noiseMap [x, y];
+
 				for (int i = 0; i < regions.Length; i++) {
 					if (currentHeight <= regions [i].height) {
 						colourMap [y * mapChunkSize + x] = regions [i].colour;
@@ -64,6 +71,7 @@ public class MapGenerator : MonoBehaviour {
 		if (octaves < 0) {
 			octaves = 0;
 		}
+		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize);
 	}
 }
 

@@ -2,40 +2,57 @@
 using System.Collections;
 
 public class MapGenerator : MonoBehaviour {
-	
 	public enum DrawMode {NoiseMap, ColourMap, FalloffMap};
 	public DrawMode drawMode;
 	
-	public const int mapChunkSize = 241;
+	public int mapChunkSize = 241;
 	public float noiseScale;
-	
+
+	[Range(1,5)]
 	public int octaves;
+
 	[Range(0,1)]
 	public float persistance;
 	public float lacunarity;
 	
+	public AnimationCurve animationCurve;
+
 	public int seed;
+
+	[Range(20, 100)]
+	public int offsetSpeed;
 	public Vector2 offset;
 	
 	public bool autoUpdate;
 	public bool useFalloff;
+	public bool movingMap;
 
 	public TerrainType[] regions;
 	private float[,] falloffMap;
 
+
 	void Awake() {
-		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize);
+		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
+		GenerateMap ();
 	}
 
+	void Update(){
+		if (movingMap) {
+			offset.x += 0.01f;
+			offset.y += 0.01f;
+			GenerateMap();
+		}
+	}
+		
 	public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap) {		
 		MapDisplay display = FindObjectOfType<MapDisplay> ();
 
 		if (drawMode == DrawMode.NoiseMap) {
-			display.DrawTexture (TextureGenerator.TextureFromHeightMap(noiseMap));
+			display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
 		} else if (drawMode == DrawMode.ColourMap) {
-			display.DrawTexture (TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
-		}else if (drawMode == DrawMode.FalloffMap) {
-			display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize)));
+			display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
+		} else if (drawMode == DrawMode.FalloffMap) {
+			display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
 		}
 	}
 	
@@ -63,15 +80,17 @@ public class MapGenerator : MonoBehaviour {
 		
 		DrawMapInEditor (noiseMap, colourMap);
 	}
-	
+
 	void OnValidate() {
 		if (lacunarity < 1) {
 			lacunarity = 1;
 		}
+
 		if (octaves < 0) {
 			octaves = 0;
 		}
-		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize);
+
+		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 	}
 }
 

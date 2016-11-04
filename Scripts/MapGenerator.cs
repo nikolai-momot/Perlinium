@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class MapGenerator : MonoBehaviour {
-	public enum DrawMode {NoiseMap, ColourMap, FalloffMap};
+	public enum DrawMode {NoiseMap, ColourMap, SunMap, MoonMap, FalloffMap};
 	public DrawMode drawMode;
 	
 	public int mapChunkSize = 241;
@@ -30,7 +30,8 @@ public class MapGenerator : MonoBehaviour {
 	public TerrainType[] regions;
 	private float[,] falloffMap;
 
-
+	
+	public TerrainTypes[] palettes;
 	void Awake() {
 		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 		GenerateMap ();
@@ -49,7 +50,8 @@ public class MapGenerator : MonoBehaviour {
 
 		if (drawMode == DrawMode.NoiseMap) {
 			display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
-		} else if (drawMode == DrawMode.ColourMap) {
+		} else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap)
+        {
 			display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
 		} else if (drawMode == DrawMode.FalloffMap) {
 			display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
@@ -58,8 +60,26 @@ public class MapGenerator : MonoBehaviour {
 	
 	public void GenerateMap() {
 		float[,] noiseMap = Noise.GenerateNoiseMap (mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
-		
-		Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
+		TerrainManager terrainManager = FindObjectOfType<TerrainManager>();
+        TerrainType[] regionsInUse;
+
+        //regionsInUse = (drawMode == DrawMode.SunMap) ? palettes[0].palette : regions;
+        //regionsInUse = (drawMode == DrawMode.SunMap) ? terrainManager.getPalettes("Sun") : regions;
+
+        switch (drawMode){
+            case DrawMode.SunMap:
+                regionsInUse = (terrainManager.empty()) ? regions : terrainManager.getPalettes("Sun");
+                break;
+            case DrawMode.MoonMap:
+                regionsInUse = (terrainManager.empty()) ? regions : terrainManager.getPalettes("Moon");
+                break;
+            default:
+                regionsInUse = regions;
+                break;
+        }
+
+        Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
+
 		for (int y = 0; y < mapChunkSize; y++) {
 			for (int x = 0; x < mapChunkSize; x++) {
 
@@ -69,9 +89,9 @@ public class MapGenerator : MonoBehaviour {
 
 				float currentHeight = noiseMap [x, y];
 
-				for (int i = 0; i < regions.Length; i++) {
-					if (currentHeight <= regions [i].height) {
-						colourMap [y * mapChunkSize + x] = regions [i].colour;
+				for (int i = 0; i < regionsInUse.Length; i++) {
+					if (currentHeight <= regionsInUse [i].height) {
+						colourMap [y * mapChunkSize + x] = regionsInUse [i].colour;
 						break;
 					}
 				}
@@ -92,11 +112,4 @@ public class MapGenerator : MonoBehaviour {
 
 		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 	}
-}
-
-[System.Serializable]
-public struct TerrainType {
-	public string name;
-	public float height;
-	public Color colour;
 }

@@ -1,32 +1,47 @@
 using UnityEngine;
-using System.Collections;
-
+using System.Collections.Generic;
 
 public class TerrainManager : MonoBehaviour{
-	public TerrainTypes[] palettes;
+	public List<TerrainTypes> palettes;
 
     public bool empty() {
-        return palettes.Length == 0;
+        return palettes.Count == 0;
     }
 
 	public TerrainType[] getPalettes(string name){
         foreach(TerrainTypes palette in palettes)
             if (palette.name.Equals(name))
-                return palette.palette;
+                return palette.palette.ToArray();
 
-        return new TerrainType[0] ;
+        return new TerrainType[0];
+    }
+
+    void Awake() {
+        palettes = new List<TerrainTypes>();
     }
 }
 
 [System.Serializable]
-public struct TerrainTypes {
+public class TerrainTypes {
 	public string name;
-	public TerrainType[] palette;
+	public List<TerrainType> palette;
+
+    public TerrainTypes() {
+        name = "";
+        palette = new List<TerrainType>();
+    }
 }
 
 [System.Serializable]
-public struct TerrainType {
+public class TerrainType {
 	public string name;
 	public float height;
 	public Color colour;
+
+    public TerrainType()
+    {
+        name = "";
+        height = 0f;
+        colour = Color.white;
+    }
 }

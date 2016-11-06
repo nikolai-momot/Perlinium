@@ -5,8 +5,10 @@ public class MapDisplay : MonoBehaviour {
 	
 	public Renderer planeRenderer;
 	public Renderer sphereRenderer;
+    public Renderer sunRenderer;
 
 	public bool useSphere;
+    public bool useSun;
 	
 	public void DrawTexture(Texture2D texture) {
 		Renderer textureRenderer = (useSphere) ? sphereRenderer : planeRenderer;
@@ -14,7 +16,8 @@ public class MapDisplay : MonoBehaviour {
 		textureRenderer.enabled = true;
 		( (useSphere) ? planeRenderer : sphereRenderer ).enabled = false;
 
-		textureRenderer.sharedMaterial.mainTexture = texture;
+        if(useSun) sunRenderer.sharedMaterial.mainTexture = texture;
+        textureRenderer.sharedMaterial.mainTexture = texture;
 		textureRenderer.transform.localScale = new Vector3 (texture.width, texture.width, texture.height);
 	}
 	

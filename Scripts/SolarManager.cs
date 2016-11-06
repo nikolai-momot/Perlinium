@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class SolarManager : MonoBehaviour {
 	public GameObject sun, earth;
@@ -8,8 +7,8 @@ public class SolarManager : MonoBehaviour {
 	[Range(0,100)]
 	public float rotationSpeed;
 
-	[Range(0, 360)]
-	public float rotationAngle;
+	/*[Range(0, 360)]
+	public float rotationAngle;*/
 	
 	[Range(500,5000)]
 	public float radius;

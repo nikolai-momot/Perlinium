@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(MapDisplay))]
+[RequireComponent(typeof(TerrainManager))]
 public class MapGenerator : MonoBehaviour {
 	public enum DrawMode {NoiseMap, ColourMap, SunMap, MoonMap, FalloffMap};
 	public DrawMode drawMode;
@@ -32,6 +34,7 @@ public class MapGenerator : MonoBehaviour {
 
 	
 	public TerrainTypes[] palettes;
+
 	void Awake() {
 		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 		GenerateMap ();
@@ -50,8 +53,7 @@ public class MapGenerator : MonoBehaviour {
 
 		if (drawMode == DrawMode.NoiseMap) {
 			display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
-		} else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap)
-        {
+		} else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap) {
 			display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
 		} else if (drawMode == DrawMode.FalloffMap) {
 			display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));

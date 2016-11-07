@@ -14,16 +14,17 @@ public class TerrainManagerEditor : Editor
     public override void OnInspectorGUI()
     {
         GUILayout.BeginVertical("box");
-        GUILayout.Space(5);
-        GUILayout.BeginHorizontal();
-        GUILayout.Space(5);
+            GUILayout.Space(5);
+            GUILayout.BeginHorizontal();
+                GUILayout.Space(5);
 
-        GUILayout.Label("Total Terrain Palettes: " + terrainManager.palettes.Count);
-        if (GUILayout.Button("Add Palette"))
-            AddPalette();
+                GUILayout.Label("Total Terrain Palettes: " + terrainManager.palettes.Count);
+                if (GUILayout.Button("Add Palette"))
+                    AddPalette();
 
-        GUILayout.EndHorizontal();
-        GUILayout.Space(5);
+                GUILayout.Space(5);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(5);
         GUILayout.EndVertical();
         GUILayout.Space(5);
 
@@ -38,7 +39,7 @@ public class TerrainManagerEditor : Editor
                         return;
                     }
                     GUILayout.Space(5);
-                    palettes.name = GUILayout.TextField(palettes.name, GUILayout.Width(100));
+                        palettes.name = GUILayout.TextField(palettes.name, GUILayout.Width(100));
                     GUILayout.Space(5);
                     if (GUILayout.Button("Add Colour"))
                     {

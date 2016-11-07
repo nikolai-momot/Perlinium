@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(MapDisplay))]
+/*[RequireComponent(typeof(MapDisplay))]*/
 [RequireComponent(typeof(TerrainManager))]
 public class MapGenerator : MonoBehaviour {
 	public enum DrawMode {NoiseMap, ColourMap, SunMap, MoonMap, FalloffMap};
@@ -33,10 +33,10 @@ public class MapGenerator : MonoBehaviour {
 	private float[,] falloffMap;
 
 	
-	public TerrainTypes[] palettes;
+	//public TerrainTypes[] palettes;
 
 	void Awake() {
-		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
+        falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 		GenerateMap ();
 	}
 
@@ -48,62 +48,117 @@ public class MapGenerator : MonoBehaviour {
 		}
 	}
 		
-	public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap) {		
-		MapDisplay display = FindObjectOfType<MapDisplay> ();
+	/*public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap) {		
+		//MapDisplay display = FindObjectOfType<MapDisplay> ();
+        SolarManager solarManager = FindObjectOfType<SolarManager>();
 
 		if (drawMode == DrawMode.NoiseMap) {
-			display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
+            display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
 		} else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap) {
-			display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
+            display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
 		} else if (drawMode == DrawMode.FalloffMap) {
-			display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
 		}
+	}*/
+
+    public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap, SolarBody solarBody)
+    {
+        //MapDisplay display = FindObjectOfType<MapDisplay>();
+
+        switch (solarBody.bodyType) {
+            case SolarBody.BodyType.Barren:
+                if(drawMode == DrawMode.FalloffMap)
+                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
+                else
+                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
+                break;
+            case SolarBody.BodyType.Earth:
+            case SolarBody.BodyType.Moon:
+            case SolarBody.BodyType.Sun:
+            default:
+                solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
+                break;
+                    
+        }
+
+
+
+        /*if (drawMode == DrawMode.NoiseMap)
+        {
+            solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
+        }
+        else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap)
+        {
+            solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
+        }
+        else if (drawMode == DrawMode.FalloffMap)
+        {
+            solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
+        }*/
+    }
+
+    public void GenerateMap() {
+		SolarManager manager = FindObjectOfType<SolarManager>();
+        manager.solarBodies.ForEach(body => {
+            GenerateMap(body);
+        });
 	}
-	
-	public void GenerateMap() {
-		float[,] noiseMap = Noise.GenerateNoiseMap (mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
-		TerrainManager terrainManager = FindObjectOfType<TerrainManager>();
+
+    public void GenerateMap(SolarBody solarBody)
+    {
+        float[,] noiseMap = Noise.GenerateNoiseMap(solarBody.mass, solarBody.mass, seed, noiseScale, octaves, persistance, lacunarity, offset);
+        TerrainManager terrainManager = FindObjectOfType<TerrainManager>();
         TerrainType[] regionsInUse;
 
         //regionsInUse = (drawMode == DrawMode.SunMap) ? palettes[0].palette : regions;
         //regionsInUse = (drawMode == DrawMode.SunMap) ? terrainManager.getPalettes("Sun") : regions;
 
-        switch (drawMode){
-            case DrawMode.SunMap:
-                regionsInUse = (terrainManager.empty()) ? regions : terrainManager.getPalettes("Sun");
+        switch (solarBody.bodyType)
+        {
+            case SolarBody.BodyType.Sun:
+                regionsInUse = (terrainManager.getPalettes("Sun").Length == 0) ? regions : terrainManager.getPalettes("Sun");
                 break;
-            case DrawMode.MoonMap:
-                regionsInUse = (terrainManager.empty()) ? regions : terrainManager.getPalettes("Moon");
+            case SolarBody.BodyType.Moon:
+                regionsInUse = (terrainManager.getPalettes("Moon").Length == 0) ? regions : terrainManager.getPalettes("Moon");
+                break;
+            case SolarBody.BodyType.Earth:
+                regionsInUse = (terrainManager.getPalettes("Earth").Length == 0) ? regions : terrainManager.getPalettes("Earth");
                 break;
             default:
+                Debug.Log("using regions");
                 regionsInUse = regions;
                 break;
         }
 
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
 
-		for (int y = 0; y < mapChunkSize; y++) {
-			for (int x = 0; x < mapChunkSize; x++) {
+        for (int y = 0; y < mapChunkSize; y++)
+        {
+            for (int x = 0; x < mapChunkSize; x++)
+            {
 
-				if (useFalloff) {
-					noiseMap [x, y] = Mathf.Clamp01(noiseMap [x, y] - falloffMap [x, y]);
-				}
+                if (useFalloff)
+                {
+                    noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
+                }
 
-				float currentHeight = noiseMap [x, y];
+                float currentHeight = noiseMap[x, y];
 
-				for (int i = 0; i < regionsInUse.Length; i++) {
-					if (currentHeight <= regionsInUse [i].height) {
-						colourMap [y * mapChunkSize + x] = regionsInUse [i].colour;
-						break;
-					}
-				}
-			}
-		}
-		
-		DrawMapInEditor (noiseMap, colourMap);
-	}
+                for (int i = 0; i < regionsInUse.Length; i++)
+                {
+                    if (currentHeight <= regionsInUse[i].height)
+                    {
+                        colourMap[y * mapChunkSize + x] = regionsInUse[i].colour;
+                        break;
+                    }
+                }
+            }
+        }
 
-	void OnValidate() {
+        DrawMapInEditor(noiseMap, colourMap, solarBody);
+    }
+
+    void OnValidate() {
 		if (lacunarity < 1) {
 			lacunarity = 1;
 		}

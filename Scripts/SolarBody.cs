@@ -1,12 +1,16 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Transform))]
 [RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(SphereCollider))]
 [System.Serializable]
 public class SolarBody : MonoBehaviour
 {
     public enum BodyType { Sun, Moon, Earth, Barren };
     public BodyType bodyType;
+
+    public List<SolarBody> satellites;
 
     public int distanceFromSun;
     public int mass;
@@ -20,12 +24,12 @@ public class SolarBody : MonoBehaviour
     public Transform axisOfOrbit;
     public Renderer textureRenderer;
     public Material material;
+
 	public SolarBody(Transform center, int minimumDistance) { 
         name = "";
-
         axisOfOrbit = center;
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
-        material = new Material(Shader.Find("Transparent/Diffuse"));
+        material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
         textureRenderer.sharedMaterial = material;
         bodyType = BodyType.Earth;
@@ -62,9 +66,11 @@ public class SolarBody : MonoBehaviour
         orbit();
 
         rotate();
+        
     }
 
-    public void orbit() {
+
+    void orbit() {
         if (inOrbit)
         {
             transform.RotateAround(axisOfOrbit.transform.position, Vector3.up, orbitSpeed * Time.deltaTime);
@@ -73,9 +79,30 @@ public class SolarBody : MonoBehaviour
         }
     }
 
-    public void rotate() {
+    void rotate() {
         if (inRotation)
+        {
             transform.Rotate(new Vector3(0, -1 * rotationSpeed, 0));
+        }
+    }
+
+    void OnMouseDown() {
+        if (Input.GetMouseButtonDown(0))
+        {
+            //Camera cam =GameObject.FindGameObjectsWithTag("MainCamera")[0].GetComponent<Camera>();
+            //Debug.Log(name + " was clicked on");
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                Debug.Log("Name = " + hit.collider.name);
+                Debug.Log("Tag = " + hit.collider.tag);
+                Debug.Log("Hit Point = " + hit.point);
+                Debug.Log("Object position = " + hit.collider.gameObject.transform.position);
+                Debug.Log("--------------");
+                GameObject.FindGameObjectsWithTag("MainCamera")[0].GetComponent<CameraController>().target = hit.collider.gameObject.transform;
+            }
+        }
     }
 
     void OnValidate()

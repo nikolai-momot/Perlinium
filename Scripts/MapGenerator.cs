@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-/*[RequireComponent(typeof(MapDisplay))]*/
 [RequireComponent(typeof(TerrainManager))]
 public class MapGenerator : MonoBehaviour {
 	public enum DrawMode {NoiseMap, ColourMap, SunMap, MoonMap, FalloffMap};
@@ -32,9 +30,6 @@ public class MapGenerator : MonoBehaviour {
 	public TerrainType[] regions;
 	private float[,] falloffMap;
 
-	
-	//public TerrainTypes[] palettes;
-
 	void Awake() {
         falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
 		GenerateMap ();
@@ -47,19 +42,6 @@ public class MapGenerator : MonoBehaviour {
 			GenerateMap();
 		}
 	}
-		
-	/*public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap) {		
-		//MapDisplay display = FindObjectOfType<MapDisplay> ();
-        SolarManager solarManager = FindObjectOfType<SolarManager>();
-
-		if (drawMode == DrawMode.NoiseMap) {
-            display.DrawTexture (TextureGenerator.TextureFromHeightMap (noiseMap));
-		} else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap) {
-            display.DrawTexture (TextureGenerator.TextureFromColourMap (colourMap, mapChunkSize, mapChunkSize));
-		} else if (drawMode == DrawMode.FalloffMap) {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
-		}
-	}*/
 
     public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap, SolarBody solarBody)
     {
@@ -80,25 +62,11 @@ public class MapGenerator : MonoBehaviour {
                 break;
                     
         }
-
-
-
-        /*if (drawMode == DrawMode.NoiseMap)
-        {
-            solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
-        }
-        else if (drawMode == DrawMode.ColourMap || drawMode == DrawMode.SunMap || drawMode == DrawMode.MoonMap)
-        {
-            solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
-        }
-        else if (drawMode == DrawMode.FalloffMap)
-        {
-            solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
-        }*/
     }
 
     public void GenerateMap() {
 		SolarManager manager = FindObjectOfType<SolarManager>();
+        //GenerateMap(manager.sun);
         manager.solarBodies.ForEach(body => {
             GenerateMap(body);
         });
@@ -109,9 +77,6 @@ public class MapGenerator : MonoBehaviour {
         float[,] noiseMap = Noise.GenerateNoiseMap(solarBody.mass, solarBody.mass, seed, noiseScale, octaves, persistance, lacunarity, offset);
         TerrainManager terrainManager = FindObjectOfType<TerrainManager>();
         TerrainType[] regionsInUse;
-
-        //regionsInUse = (drawMode == DrawMode.SunMap) ? palettes[0].palette : regions;
-        //regionsInUse = (drawMode == DrawMode.SunMap) ? terrainManager.getPalettes("Sun") : regions;
 
         switch (solarBody.bodyType)
         {

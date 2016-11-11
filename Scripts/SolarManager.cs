@@ -14,8 +14,11 @@ public class SolarManager : MonoBehaviour
     public List<SolarBody> solarBodies;
 
 	void Start(){
+        transform.GetComponentInChildren<CameraController>().target = sun.transform;
+
         foreach (SolarBody solarBody in solarBodies) {
             solarBody.transform.position = modifyPosition(solarBody);
+
         }
 	}
 
@@ -31,10 +34,9 @@ public class SolarManager : MonoBehaviour
             solarBody.inOrbit = solarOrbit;
             solarBody.transform.localScale = new Vector3(solarBody.mass, solarBody.mass, solarBody.mass);
             solarBody.transform.position = new Vector3(0,0, solarBody.distanceFromSun);
-            //solarBody.transform.position = modifyPosition(solarBody);
         }
     }
-
+    
     Vector3 modifyPosition(SolarBody solarBody){
 		return (solarBody.transform.position - sun.transform.position).normalized * solarBody.distanceFromSun + sun.transform.position;
 	}

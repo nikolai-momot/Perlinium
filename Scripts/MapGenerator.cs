@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(TerrainManager))]
 public class MapGenerator : MonoBehaviour {
 	public enum DrawMode {NoiseMap, ColourMap, SunMap, MoonMap, FalloffMap};
 	public DrawMode drawMode;
 	
-	public int mapChunkSize = 241;
+    public int mapSize = 241;
 	public float noiseScale;
 
 	[Range(1,5)]
@@ -30,9 +31,12 @@ public class MapGenerator : MonoBehaviour {
 	public TerrainType[] regions;
 	private float[,] falloffMap;
 
+    SolarManager solarManager;
+
 	void Awake() {
-        falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
-		GenerateMap ();
+        solarManager = FindObjectOfType<SolarManager>();
+        falloffMap = FalloffGenerator.GenerateFalloffMap (mapSize, animationCurve);
+        GenerateMap();
 	}
 
 	void Update(){
@@ -50,7 +54,7 @@ public class MapGenerator : MonoBehaviour {
         switch (solarBody.bodyType) {
             case SolarBody.BodyType.Barren:
                 if(drawMode == DrawMode.FalloffMap)
-                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize, animationCurve)));
+                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapSize, animationCurve)));
                 else
                     solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
                 break;
@@ -58,23 +62,38 @@ public class MapGenerator : MonoBehaviour {
             case SolarBody.BodyType.Moon:
             case SolarBody.BodyType.Sun:
             default:
-                solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
+                solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
                 break;
                     
         }
     }
 
     public void GenerateMap() {
-		SolarManager manager = FindObjectOfType<SolarManager>();
-        //GenerateMap(manager.sun);
-        manager.solarBodies.ForEach(body => {
-            GenerateMap(body);
-        });
+        // manager = FindObjectOfType<SolarManager>();
+        if (solarManager == null)
+            solarManager = FindObjectOfType<SolarManager>();
+
+        SolarBody solarBody = solarManager.sun.GetComponentInChildren<SolarBody>();
+
+        if (solarBody == null)
+            solarBody = FindObjectOfType<SolarBody>();
+
+        GenerateMap(solarBody);
+        GenerateSatelliteMaps(solarManager.solarBodies);
 	}
+
+    void GenerateSatelliteMaps(List<SolarBody> solarBodies) {
+        foreach(SolarBody solarBody in solarBodies) {
+            GenerateMap(solarBody);
+            GenerateSatelliteMaps(solarBody.satellites);
+        }
+    }
 
     public void GenerateMap(SolarBody solarBody)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(solarBody.mass, solarBody.mass, seed, noiseScale, octaves, persistance, lacunarity, offset);
+        int newSeed = solarBody.seedOffset^3 + seed;
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapSize, mapSize, newSeed, noiseScale, octaves, persistance, lacunarity, offset);
+
         TerrainManager terrainManager = FindObjectOfType<TerrainManager>();
         TerrainType[] regionsInUse;
 
@@ -95,11 +114,11 @@ public class MapGenerator : MonoBehaviour {
                 break;
         }
 
-        Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
+        Color[] colourMap = new Color[mapSize * mapSize];
 
-        for (int y = 0; y < mapChunkSize; y++)
+        for (int y = 0; y < mapSize; y++)
         {
-            for (int x = 0; x < mapChunkSize; x++)
+            for (int x = 0; x < mapSize; x++)
             {
 
                 if (useFalloff)
@@ -113,7 +132,7 @@ public class MapGenerator : MonoBehaviour {
                 {
                     if (currentHeight <= regionsInUse[i].height)
                     {
-                        colourMap[y * mapChunkSize + x] = regionsInUse[i].colour;
+                        colourMap[y * mapSize + x] = regionsInUse[i].colour;
                         break;
                     }
                 }
@@ -132,6 +151,6 @@ public class MapGenerator : MonoBehaviour {
 			octaves = 0;
 		}
 
-		falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize, animationCurve);
-	}
+        falloffMap = FalloffGenerator.GenerateFalloffMap (mapSize, animationCurve);
+    }
 }

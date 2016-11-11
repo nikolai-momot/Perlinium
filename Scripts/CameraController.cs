@@ -36,8 +36,7 @@ public class CameraController : MonoBehaviour {
     }
 
 	void Update(){
-        offset = transform.position - target.position;
-        transform.position = target.transform.position + offset;
+        //offset = transform.position - target.position;
 
         int cameraDistance = Mathf.RoundToInt(Input.GetAxis("Mouse ScrollWheel")*sensitivity);
 		transform.position += new Vector3 (0,0,cameraDistance);
@@ -46,7 +45,9 @@ public class CameraController : MonoBehaviour {
     void LateUpdate() {
         if (target)
 		{
-			if (Input.GetMouseButton(0))
+
+            transform.position = target.transform.position + offset;
+            if (Input.GetMouseButton(0))
 			{
 				velocityX += xSpeed * Input.GetAxis("Mouse X") * 0.02f;
 				velocityY += ySpeed * Input.GetAxis("Mouse Y") * 0.02f;

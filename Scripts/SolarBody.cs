@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(Transform))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -12,9 +13,9 @@ public class SolarBody : MonoBehaviour
 
     public List<SolarBody> satellites;
 
-    public int distanceFromSun;
+    public int distanceFromAxis;
     public int mass;
-    public int seedOffset = 0;
+    public int seedOffset;
 
     public bool inOrbit = true;
     public int orbitSpeed = 20;
@@ -26,15 +27,30 @@ public class SolarBody : MonoBehaviour
     public Renderer textureRenderer;
     public Material material;
 
-	public SolarBody(Transform center, int newDistance) {
+	public void setup(Transform center, int newDistance, BodyType type) {
         bodyType = BodyType.Earth;
         axisOfOrbit = center;
 
-        distanceFromSun = newDistance;
+        Debug.Log("generateSeedOffset() "+generateSeedOffset());
+        seedOffset = generateSeedOffset();
+
+        distanceFromAxis = newDistance;
 
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
+    }
+
+    public void setupSatellite(Transform center) {
+        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x) + 50;
+        setup(center, newDistance, BodyType.Moon);
+
+        mass /= 15;
+    }
+
+    private int generateSeedOffset()
+    {
+        return Mathf.RoundToInt( UnityEngine.Random.Range(2,2000) );
     }
 
     public void DrawTexture(Texture2D texture)
@@ -91,11 +107,16 @@ public class SolarBody : MonoBehaviour
     
     void OnValidate()
     {
-        transform.localPosition = new Vector3(0,0,distanceFromSun);
+        if(axisOfOrbit != null)
+            transform.localPosition = new Vector3(0,0, adjustedDistance());
+    }
+
+    public int adjustedDistance() {
+        return Mathf.RoundToInt( axisOfOrbit.position.z ) + distanceFromAxis;
     }
 
     public Vector3 modifyPosition()
     {
-        return (transform.position - axisOfOrbit.transform.position).normalized * distanceFromSun + axisOfOrbit.transform.position;
+        return (transform.position - axisOfOrbit.transform.position).normalized * distanceFromAxis + axisOfOrbit.transform.position;
     }
 }

@@ -17,7 +17,7 @@ public class SolarManager : MonoBehaviour
         transform.GetComponentInChildren<CameraController>().target = sun.transform;
 
         foreach (SolarBody solarBody in solarBodies) {
-            solarBody.transform.position = modifyPosition(solarBody);
+            solarBody.transform.position = solarBody.modifyPosition();
 
         }
 	}
@@ -33,15 +33,66 @@ public class SolarManager : MonoBehaviour
         {
             solarBody.inOrbit = solarOrbit;
             solarBody.transform.localScale = new Vector3(solarBody.mass, solarBody.mass, solarBody.mass);
-            solarBody.transform.position = new Vector3(0,0, solarBody.distanceFromSun);
+            solarBody.transform.position = new Vector3(0,0, solarBody.adjustedDistance());
         }
     }
-    
-    Vector3 modifyPosition(SolarBody solarBody){
-		return (solarBody.transform.position - sun.transform.position).normalized * solarBody.distanceFromSun + sun.transform.position;
-	}
 
-    public Vector3 getLastPlanet() {
-        return solarBodies[solarBodies.Count - 1].transform.localPosition;
+    public Vector3 getLastPlanetPosition() {
+        return (solarBodies.Count == 0) ? sun.transform.localPosition : solarBodies[solarBodies.Count - 1].transform.localPosition;
+    }
+    
+    void RemoveSatellites(SolarBody solarBody)
+    {
+        foreach (SolarBody body in solarBody.satellites)
+            RemoveSolarBody(body);
+    }
+
+    public void RemoveSolarBody(SolarBody solarBody)
+    {
+        if (solarBody == null)
+            return;
+
+        solarBodies.Remove(solarBody);
+        RemoveSatellites(solarBody);
+        DestroyImmediate(solarBody.gameObject);
+    }
+
+    public void AddSolarBody(SolarBody parent)
+    {
+        GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
+        newBody.transform.SetParent(sun.transform);
+
+        SolarBody newSolar = newBody.GetComponent<SolarBody>();
+        newSolar.setupSatellite(parent.transform);
+        parent.satellites.Add(newSolar);
+
+        string newName = "Satellite " + solarBodies.Count + " of " + parent.name;
+        newBody.name = newName;
+        newSolar.name = newName;
+
+        //newSolar.axisOfOrbit = parent.transform;
+
+        //newSolar.mass /= 15;
+        //newSolar.distanceFromAxis /= 20;
+        newBody.transform.localPosition = new Vector3(0, 0, newSolar.distanceFromAxis);
+    }
+
+    public void AddSolarBody()
+    {
+        GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
+        newBody.transform.SetParent(sun.transform, false);
+
+        SolarBody newSolar = newBody.GetComponent<SolarBody>();
+        newSolar.setup(sun.transform, Mathf.RoundToInt(getLastPlanetPosition().z)*2, SolarBody.BodyType.Earth);
+        solarBodies.Add(newSolar);
+
+        string newName = "Planet " + solarBodies.Count;
+        newBody.name = newName;
+        newSolar.name = newName;
+
+        newSolar.distanceFromAxis += Mathf.RoundToInt(getLastPlanetPosition().z);
+
+        newBody.transform.localPosition = new Vector3(0, 0, newSolar.distanceFromAxis);
+
     }
 }

@@ -5,48 +5,91 @@ using System.Collections.Generic;
 [System.Serializable]
 public class SolarManager : MonoBehaviour
 {
+    /// <summary>
+    /// Center of the solar system
+    /// </summary>
     public GameObject sun;
 
-    //is the solar system in Motion
+    /// <summary>
+    /// Is the solar system in motion
+    /// </summary>
     public bool solarOrbit;
 
-    //planets, moons, etc
+    /// <summary>
+    /// planets, moons, etc
+    /// </summary>
     public List<SolarBody> solarBodies;
 
-	void Start(){
+    /// <summary>
+    /// Generates the map that forms the solarbody texture
+    /// </summary>
+    MapGenerator mapGenerator;
+
+    void Start()
+    {
+        mapGenerator = GetComponent<MapGenerator>();
+
         transform.GetComponentInChildren<CameraController>().target = sun.transform;
+    }
 
-        foreach (SolarBody solarBody in solarBodies) {
-            solarBody.transform.position = solarBody.modifyPosition();
-
-        }
-	}
-
+    /// <summary>
+    /// Updates variables on inspector validation
+    /// </summary>
     void OnValidate()
     {
-        updateVariables();
+        updateSolarBodies();
     }
 
-    public void updateVariables()
+    /// <summary>
+    /// Loops through solar bodies within the system and updates their respective properties
+    /// </summary>
+    public void updateSolarBodies()
     {
         foreach (SolarBody solarBody in solarBodies)
-        {
-            solarBody.inOrbit = solarOrbit;
-            solarBody.transform.localScale = new Vector3(solarBody.mass, solarBody.mass, solarBody.mass);
-            solarBody.transform.position = new Vector3(0,0, solarBody.adjustedDistance());
-        }
+            updateSolarBody(solarBody);
     }
 
-    public Vector3 getLastPlanetPosition() {
-        return (solarBodies.Count == 0) ? sun.transform.localPosition : solarBodies[solarBodies.Count - 1].transform.localPosition;
+    /// <summary>
+    /// Takes the provided solarBody and updates their properties and sattelites
+    /// </summary>
+    /// <param name="solarBody"></param>
+    void updateSolarBody(SolarBody solarBody)
+    {
+        if (solarBody == null)
+            return;
+
+        //solarBody.inOrbit = solarOrbit;
+        solarBody.transform.localScale = new Vector3(solarBody.mass, solarBody.mass, solarBody.mass);
+        solarBody.transform.position = new Vector3(0, 0, solarBody.adjustedDistance());
+
+        foreach (SolarBody satellite in solarBody.satellites)
+            updateSolarBody(satellite);
+
     }
-    
+
+    /// <summary>
+    /// Takes the planet farthest from the sun and returns their position
+    /// </summary>
+    /// <returns></returns>
+    public Vector3 getLastPlanetPosition()
+    {
+        return (solarBodies.Count == 0) ? new Vector3(0, 0, 200) : solarBodies[solarBodies.Count - 1].transform.localPosition;
+    }
+
+    /// <summary>
+    /// Removes the each sattelite orbiting the provided solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void RemoveSatellites(SolarBody solarBody)
     {
         foreach (SolarBody body in solarBody.satellites)
             RemoveSolarBody(body);
     }
 
+    /// <summary>
+    /// Removes the game object from each list of planets, removes their sattelites and destroys the gameobject
+    /// </summary>
+    /// <param name="solarBody"></param>
     public void RemoveSolarBody(SolarBody solarBody)
     {
         if (solarBody == null)
@@ -57,42 +100,57 @@ public class SolarManager : MonoBehaviour
         DestroyImmediate(solarBody.gameObject);
     }
 
-    public void AddSolarBody(SolarBody parent)
+    /// <summary>
+    /// Adds a sattellite to the provided planet
+    /// Create gameobject, sets up the orbit and generates texture
+    /// </summary>
+    /// <param name="parent"></param>
+    public void AddSatellite(SolarBody parent)
     {
         GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
         newBody.transform.SetParent(sun.transform);
 
         SolarBody newSolar = newBody.GetComponent<SolarBody>();
-        newSolar.setupSatellite(parent.transform);
+
+        newSolar.distanceFromAxis += 50;
+
+        newSolar.setupSatellite(parent.transform, parent.orbitSpeed * 2);
         parent.satellites.Add(newSolar);
 
-        string newName = "Satellite " + solarBodies.Count + " of " + parent.name;
+        string newName = "Satellite " + parent.satellites.Count + " of " + parent.name;
         newBody.name = newName;
         newSolar.name = newName;
 
-        //newSolar.axisOfOrbit = parent.transform;
+        if (mapGenerator == null)
+            mapGenerator = GetComponent<MapGenerator>();
 
-        //newSolar.mass /= 15;
-        //newSolar.distanceFromAxis /= 20;
-        newBody.transform.localPosition = new Vector3(0, 0, newSolar.distanceFromAxis);
+        mapGenerator.GenerateMap(newSolar);
     }
 
+    /// <summary>
+    /// Adds a planet to the solar system
+    /// Create gameobject, sets up the orbit and generates texture
+    /// </summary>
     public void AddSolarBody()
     {
         GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
         newBody.transform.SetParent(sun.transform, false);
 
         SolarBody newSolar = newBody.GetComponent<SolarBody>();
-        newSolar.setup(sun.transform, Mathf.RoundToInt(getLastPlanetPosition().z)*2, SolarBody.BodyType.Earth);
+
+        newSolar.distanceFromAxis += Mathf.RoundToInt(getLastPlanetPosition().z);
+
+        newSolar.setup(sun.transform, Mathf.RoundToInt(getLastPlanetPosition().z) * 2, BodyType.Earth, 5);
         solarBodies.Add(newSolar);
 
         string newName = "Planet " + solarBodies.Count;
         newBody.name = newName;
         newSolar.name = newName;
 
-        newSolar.distanceFromAxis += Mathf.RoundToInt(getLastPlanetPosition().z);
 
-        newBody.transform.localPosition = new Vector3(0, 0, newSolar.distanceFromAxis);
+        if (mapGenerator == null)
+            mapGenerator = GetComponent<MapGenerator>();
 
+        mapGenerator.GenerateMap(newSolar);
     }
 }

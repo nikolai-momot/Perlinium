@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
 
 [CustomEditor(typeof(SolarManager))]
 public class SolarManagerEditor : Editor
 {
     SolarManager solarManager;
 
+    /// <summary>
+    /// If an item is removed then subsequent inspector calls will get a NullReference Error
+    /// This is avoided by returning true ending of drawing the GUI early and redrawing it with the new items
+    /// </summary>
     const bool REFRESH_EDITOR = true;
 
     void OnEnable()
@@ -21,7 +24,7 @@ public class SolarManagerEditor : Editor
         GUILayout.BeginVertical("box");
             GUILayout.BeginHorizontal();
                 solarManager.sun = (GameObject)EditorGUILayout.ObjectField("Center of the solar system ", solarManager.sun, typeof(GameObject), true);
-                solarManager.updateVariables();
+                solarManager.updateSolarBodies();
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Add Solar Body"))
@@ -76,7 +79,7 @@ public class SolarManagerEditor : Editor
                 solarBody.name = GUILayout.TextField(solarBody.name, GUILayout.Width(135));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-                solarBody.bodyType = (SolarBody.BodyType)EditorGUILayout.EnumPopup("Solar Body Type:", solarBody.bodyType);
+                solarBody.bodyType = (BodyType)EditorGUILayout.EnumPopup("Solar Body Type:", solarBody.bodyType);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
                 GUILayout.Space(5);
@@ -107,14 +110,14 @@ public class SolarManagerEditor : Editor
         GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
                 GUILayout.Space(5);
-                    solarBody.inOrbit = GUILayout.Toggle(solarBody.inOrbit, "Orbit");
+                    //solarBody.inOrbit = GUILayout.Toggle(solarBody.inOrbit, "Orbit");
                 GUILayout.Space(5);
                     solarBody.orbitSpeed = Mathf.RoundToInt(GUILayout.HorizontalSlider(solarBody.orbitSpeed, 1, 50, GUILayout.Width(100)));
                 GUILayout.Space(5);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
                 GUILayout.Space(5);
-                    solarBody.inRotation = GUILayout.Toggle(solarBody.inRotation, "Rotation");
+                    //solarBody.inRotation = GUILayout.Toggle(solarBody.inRotation, "Rotation");
                 GUILayout.Space(5);
                     solarBody.rotationSpeed = GUILayout.HorizontalSlider(solarBody.rotationSpeed, 1, 3, GUILayout.Width(100));
                 GUILayout.Space(5);
@@ -124,7 +127,7 @@ public class SolarManagerEditor : Editor
                     GUILayout.BeginHorizontal();
                         if (GUILayout.Button("Add Satellite"))
                         {
-                            solarManager.AddSolarBody(solarBody);
+                            solarManager.AddSatellite(solarBody);
                             return REFRESH_EDITOR;
                         }
                     GUILayout.EndHorizontal();

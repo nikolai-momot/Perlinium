@@ -3,40 +3,37 @@ using System.Collections.Generic;
 
 public class TerrainManager : MonoBehaviour{
 	public List<TerrainTypes> palettes;
-
-    void OnValidate()
+   
+    public List<TerrainColour> getPalettes(BodyType type)
     {
-       /* MapGenerator mapGenerator = FindObjectOfType<MapGenerator>();
-        mapGenerator.GenerateMap();*/
-    }
+        foreach (TerrainTypes palette in palettes)
+            if (palette.bodyType == type)
+                return palette.palette;
 
-    public TerrainType[] getPalettes(string name){
-        foreach(TerrainTypes palette in palettes)
-            if (palette.name.Equals(name))
-                return palette.palette.ToArray();
-
-        return new TerrainType[0];
+        return new List<TerrainColour>();
     }
 }
 
 [System.Serializable]
 public class TerrainTypes {
 	public string name;
-	public List<TerrainType> palette;
+    public BodyType bodyType;
+    public List<TerrainColour> palette;
 
     public TerrainTypes() {
         name = "";
-        palette = new List<TerrainType>();
+        palette = new List<TerrainColour>();
     }
 }
 
 [System.Serializable]
-public class TerrainType {
+public class TerrainColour
+{
 	public string name;
 	public float height;
 	public Color colour;
 
-    public TerrainType()
+    public TerrainColour()
     {
         name = "";
         height = 0f;

@@ -1,14 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
 
+public enum BodyType { Sun, Moon, Earth, Barren, GasGiant }
+
+[RequireComponent(typeof(Orbit))]
 [RequireComponent(typeof(Transform))]
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(SphereCollider))]
 [System.Serializable]
 public class SolarBody : MonoBehaviour
 {
-    public enum BodyType { Sun, Moon, Earth, Barren };
     public BodyType bodyType;
 
     public List<SolarBody> satellites;
@@ -16,22 +17,25 @@ public class SolarBody : MonoBehaviour
     public int distanceFromAxis;
     public int mass;
     public int seedOffset;
-
-    public bool inOrbit = true;
-    public int orbitSpeed = 20;
-
-    public bool inRotation = true;
-    public float rotationSpeed = 1f;
+    
+    public int orbitSpeed;
+    public float rotationSpeed;
 
     public Transform axisOfOrbit;
     public Renderer textureRenderer;
     public Material material;
 
-	public void setup(Transform center, int newDistance, BodyType type) {
-        bodyType = BodyType.Earth;
-        axisOfOrbit = center;
 
-        Debug.Log("generateSeedOffset() "+generateSeedOffset());
+    /// <summary>
+    /// Assigns key variables and sets up orbit
+    /// </summary>
+    /// <param name="center"></param>
+    /// <param name="newDistance"></param>
+    /// <param name="type"></param>
+	public void setup(Transform center, int newDistance, BodyType type, int orbitSpeed) {
+        bodyType = type;
+        axisOfOrbit = center;
+        
         seedOffset = generateSeedOffset();
 
         distanceFromAxis = newDistance;
@@ -39,60 +43,41 @@ public class SolarBody : MonoBehaviour
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
+
+        this.orbitSpeed = orbitSpeed;
+        rotationSpeed = 1f;
+        
+        Orbit orbit = GetComponent<Orbit>();
+        orbit.Setup(center, orbitSpeed, newDistance);
     }
 
-    public void setupSatellite(Transform center) {
-        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x) + 50;
-        setup(center, newDistance, BodyType.Moon);
+    /// <summary>
+    /// Satellite version of the Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
+    /// </summary>
+    /// <param name="center"></param>
+    public void setupSatellite(Transform center, int speed) {
+        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x)/2 + 50;
 
+        setup(center, newDistance, BodyType.Moon, speed);
+        
         mass /= 15;
     }
 
     private int generateSeedOffset()
     {
-        return Mathf.RoundToInt( UnityEngine.Random.Range(2,2000) );
+        return Mathf.RoundToInt( Random.Range(2,2000) );
     }
 
     public void DrawTexture(Texture2D texture)
     {
         textureRenderer.sharedMaterial.mainTexture = texture;
-        //textureRenderer.transform.localScale = new Vector3(texture.width, texture.width, texture.height);
     }
 
     void Awake() {
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
     }
-
-    void Start()
-    {
-        //transform.position = modifyPosition();
-    }
-
-    void Update()
-    {
-        //orbit();
-
-        rotate();
-        
-    }
-
-    void orbit() {
-        if (inOrbit)
-        {
-            transform.RotateAround(axisOfOrbit.transform.position, Vector3.up, orbitSpeed * Time.deltaTime);
-            Vector3 desiredPosition = modifyPosition();
-            transform.position = Vector3.MoveTowards(transform.position, desiredPosition, Time.deltaTime * orbitSpeed);
-        }
-    }
-
-    void rotate() {
-        if (inRotation)
-        {
-            transform.Rotate(new Vector3(0, -1 * rotationSpeed, 0));
-        }
-    }
-
+    
     void OnMouseDown() {
         if (Input.GetMouseButtonDown(0))
         {
@@ -113,10 +98,5 @@ public class SolarBody : MonoBehaviour
 
     public int adjustedDistance() {
         return Mathf.RoundToInt( axisOfOrbit.position.z ) + distanceFromAxis;
-    }
-
-    public Vector3 modifyPosition()
-    {
-        return (transform.position - axisOfOrbit.transform.position).normalized * distanceFromAxis + axisOfOrbit.transform.position;
     }
 }

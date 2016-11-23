@@ -21,11 +21,17 @@ public class MapGenerator : MonoBehaviour {
 	public int offsetSpeed;
 	public Vector2 offset;
 	
-	public bool autoUpdate;
+	public bool useMesh;
 	public bool useFalloff;
 	public bool movingMap;
     
-	private float[,] falloffMap;
+	float[,] falloffMap;
+
+
+    [Range(0, 6)]
+    public int levelOfDetail;
+    public float meshHeightMultiplier;
+    public AnimationCurve meshHeightCurve;
 
     SolarManager solarManager;
 
@@ -52,10 +58,15 @@ public class MapGenerator : MonoBehaviour {
                 if (useFalloff)
                     solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapSize, offsetCurve)));
                 else
-                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
+                    solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
+                break;
+            case BodyType.Earth:
+                if(useMesh)
+                    solarBody.DrawMesh(MeshGenerator.GenerateTerrainMesh(noiseMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail), TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
+                else
+                    solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
                 break;
             case BodyType.GasGiant:
-            case BodyType.Earth:
             case BodyType.Barren:
             case BodyType.Sun:
             default:
@@ -79,6 +90,10 @@ public class MapGenerator : MonoBehaviour {
 
     void GenerateSatelliteMaps(List<SolarBody> solarBodies) {
         foreach(SolarBody solarBody in solarBodies) {
+
+            if (solarBody == null)
+                continue;
+
             GenerateMap(solarBody);
             GenerateSatelliteMaps(solarBody.satellites);
         }
@@ -95,7 +110,7 @@ public class MapGenerator : MonoBehaviour {
         if(solarBody.bodyType == BodyType.GasGiant)
             GasGiantGenerator.GenerateGasGiant(noiseMap);
 
-        List<TerrainColour> regionsInUse = FindObjectOfType<TerrainManager>().getPalettes(solarBody.bodyType);
+        List<PaletteColour> regionsInUse = FindObjectOfType<PaletteManager>().getPalette(solarBody.bodyType);
         
         Color[] colourMap = new Color[mapSize * mapSize];
         

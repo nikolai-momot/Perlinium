@@ -23,6 +23,7 @@ public class SolarBody : MonoBehaviour
 
     public Transform axisOfOrbit;
     public Renderer textureRenderer;
+    public MeshFilter filter;
     public Material material;
 
 
@@ -39,7 +40,7 @@ public class SolarBody : MonoBehaviour
         seedOffset = generateSeedOffset();
 
         distanceFromAxis = newDistance;
-
+        filter = transform.gameObject.GetComponent<MeshFilter>();
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
@@ -73,7 +74,16 @@ public class SolarBody : MonoBehaviour
         textureRenderer.sharedMaterial.mainTexture = texture;
     }
 
+    public void DrawMesh(MeshData meshData, Texture2D texture)
+    {
+        filter = transform.gameObject.GetComponent<MeshFilter>();
+        filter.sharedMesh = meshData.CreateMesh();
+        textureRenderer.sharedMaterial.mainTexture = texture;
+    }
+
     void Awake() {
+
+        filter = transform.gameObject.GetComponent<MeshFilter>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
     }

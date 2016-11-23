@@ -13,7 +13,7 @@ public class SolarManager : MonoBehaviour
     /// <summary>
     /// Is the solar system in motion
     /// </summary>
-    public bool solarOrbit;
+    //public bool solarOrbit;
 
     /// <summary>
     /// planets, moons, etc

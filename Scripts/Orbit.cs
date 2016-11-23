@@ -10,11 +10,11 @@ public class Orbit : MonoBehaviour
     /// <summary>
     /// The speed at which this object orbits.
     /// </summary>
-    public float orbitSpeed;
+    public float orbitSpeed = 7;
     /// <summary>
     /// The speed at which this object rotates.
     /// </summary>
-    public float rotationRate;
+    public float rotationRate = 1;
 
     /// <summary>
     /// The distance between this object and the object it orbits.

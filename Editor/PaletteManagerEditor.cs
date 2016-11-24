@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 
 [CustomEditor(typeof(PaletteManager))]
 public class PaletteManagerEditor : Editor
@@ -11,13 +10,22 @@ public class PaletteManagerEditor : Editor
     /// </summary>
     const bool REFRESH_EDITOR = true;
 
+    /// <summary>
+    /// The editor target
+    /// </summary>
     PaletteManager paletteManager;
 
+    /// <summary>
+    /// Sets editor targer on editor enable
+    /// </summary>
     void OnEnable()
     {
         paletteManager = (PaletteManager)target;
     }
 
+    /// <summary>
+    /// Draws the main box and the palettes
+    /// </summary>
     public override void OnInspectorGUI()
     {
         if(DrawMainBox())
@@ -27,6 +35,10 @@ public class PaletteManagerEditor : Editor
             return;
     }
 
+    /// <summary>
+    /// The main box contents
+    /// </summary>
+    /// <returns></returns>
     bool DrawMainBox() {
         GUILayout.BeginVertical("box");
 
@@ -50,6 +62,10 @@ public class PaletteManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Loops through the palettes and prints their respective interfaces
+    /// </summary>
+    /// <returns></returns>
     bool DrawPalettes()
     {
         foreach (Palette palette in paletteManager.palettes)
@@ -91,6 +107,11 @@ public class PaletteManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws a palette inteface
+    /// </summary>
+    /// <param name="palette"></param>
+    /// <returns></returns>
     bool DrawPalette(Palette palette)
     {
         GUILayout.BeginVertical();
@@ -109,7 +130,12 @@ public class PaletteManagerEditor : Editor
 
         return !REFRESH_EDITOR;
     }
-
+    
+    /// <summary>
+    /// Loops through the palette colours and draws their respective interfaces
+    /// </summary>
+    /// <param name="palette"></param>
+    /// <returns></returns>
     bool DrawColours(Palette palette) {
         foreach (PaletteColour colour in palette.palette)
         {
@@ -119,7 +145,13 @@ public class PaletteManagerEditor : Editor
 
         return !REFRESH_EDITOR;
     }
-
+    
+    /// <summary>
+    /// Draws the PaletteColour's interface
+    /// </summary>
+    /// <param name="palette"></param>
+    /// <param name="paletteColour"></param>
+    /// <returns></returns>
     bool DrawColour(Palette palette, PaletteColour paletteColour) {
         GUILayout.BeginHorizontal();
             GUILayout.Space(5);
@@ -146,6 +178,10 @@ public class PaletteManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the Add Palette button
+    /// </summary>
+    /// <returns></returns>
     bool DrawAddPaletteButton()
     {
         GUILayout.Label("Total Terrain Palettes: " + paletteManager.palettes.Count);
@@ -157,7 +193,12 @@ public class PaletteManagerEditor : Editor
 
         return !REFRESH_EDITOR;
     }
-
+    
+    /// <summary>
+    /// Draws the remove palette button
+    /// </summary>
+    /// <param name="palette"></param>
+    /// <returns></returns>
     bool DrawRemovePaletteButton(Palette palette) {
         if (GUILayout.Button("Remove Palette"))
         {
@@ -167,7 +208,12 @@ public class PaletteManagerEditor : Editor
 
         return !REFRESH_EDITOR;
     }
-
+    
+    /// <summary>
+    /// Draws the add PaletteColour button
+    /// </summary>
+    /// <param name="palette"></param>
+    /// <returns></returns>
     bool DrawAddColourButton(Palette palette)
     {
         if (GUILayout.Button("Add Colour"))
@@ -179,6 +225,12 @@ public class PaletteManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the remove Palette button
+    /// </summary>
+    /// <param name="palettes"></param>
+    /// <param name="palette"></param>
+    /// <returns></returns>
     bool DrawRemoveColourButton(Palette palettes, PaletteColour palette) {
         if (GUILayout.Button("X"))
         {
@@ -189,21 +241,37 @@ public class PaletteManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the Add Palette button
+    /// </summary>
     void AddPalette()
     {
         paletteManager.palettes.Add(new Palette());
     }
 
+    /// <summary>
+    /// Draws the remove Palette button
+    /// </summary>
+    /// <param name="palettes"></param>
     void RemovePalette(Palette palettes)
     {
         paletteManager.palettes.Remove(palettes);
     }
 
+    /// <summary>
+    /// Draws the remove PaletteColour button
+    /// </summary>
+    /// <param name="palettes"></param>
     void AddColour(Palette palettes)
     {
         palettes.palette.Add(new PaletteColour());
     }
 
+    /// <summary>
+    /// Draws the remove PaletteColour button
+    /// </summary>
+    /// <param name="palettes"></param>
+    /// <param name="palette"></param>
     void RemoveColour(Palette palettes, PaletteColour palette)
     {
         palettes.palette.Remove(palette);

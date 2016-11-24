@@ -1,25 +1,31 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
 
 [CustomEditor(typeof(SolarManager))]
 public class SolarManagerEditor : Editor
 {
+    /// <summary>
+    /// The editor target
+    /// </summary>
     SolarManager solarManager;
-
-    bool displayBaseInspector;
-
+    
     /// <summary>
     /// If an item is removed then subsequent inspector calls will get a NullReference Error
     /// This is avoided by returning true ending of drawing the GUI early and redrawing it with the new items
     /// </summary>
     const bool REFRESH_EDITOR = true;
 
+    /// <summary>
+    /// Sets the eitor's target on editor enable
+    /// </summary>
     void OnEnable()
     {
         solarManager = (SolarManager)target;
     }
 
+    /// <summary>
+    /// Ovverride draws the two main components of the custom editor
+    /// </summary>
     public override void OnInspectorGUI()
     {
         if (DrawMainControlBox())
@@ -31,6 +37,10 @@ public class SolarManagerEditor : Editor
             return;
     }
 
+    /// <summary>
+    /// Draws the box that contains the planet count and the the button that adds more
+    /// </summary>
+    /// <returns></returns>
     bool DrawMainControlBox()
     {
         GUILayout.BeginVertical("box");
@@ -45,6 +55,10 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Loops through each solar body and draws their respective interfaces
+    /// </summary>
+    /// <returns></returns>
     bool DrawSolarBodies()
     {
         GUILayout.BeginVertical();
@@ -58,6 +72,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws a planet's interface
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
     bool DrawSolarBody(SolarBody solarBody)
     {
         if (solarBody == null)
@@ -86,6 +105,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Loops through all the satellites of a planet and draws their respective interfaces
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <returns></returns>
     bool DrawSatellites(SolarBody parent)
     {
         GUILayout.BeginVertical();
@@ -99,6 +123,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws a satellite's interface
+    /// </summary>
+    /// <param name="satellite"></param>
+    /// <returns></returns>
     bool DrawSatellite(SolarBody satellite)
     {
         GUILayout.BeginHorizontal("box");
@@ -118,6 +147,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the main information of a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
     bool DrawSolarBodyMain(SolarBody solarBody)
     {
         GUILayout.BeginVertical();
@@ -133,6 +167,10 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the button that adds planets and triggers the editor refresh
+    /// </summary>
+    /// <returns></returns>
     bool DrawAddSolarBodyButton()
     {
         GUILayout.BeginHorizontal();
@@ -148,6 +186,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the button that removes the satellites and triggers the editor refresh
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
     bool DrawRemoveSolarBodyButton(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();
@@ -163,6 +206,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the button that adds a satellite and triggers the editor refresh
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
     bool DrawAddSatelliteButton(SolarBody solarBody)
     {
         if (solarBody.bodyType != BodyType.Moon)
@@ -179,6 +227,11 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
 
+    /// <summary>
+    /// Draws the button that removes a satellite and triggers the editor refresh
+    /// </summary>
+    /// <param name="satellite"></param>
+    /// <returns></returns>
     bool DrawRemoveSatelliteButton(SolarBody satellite)
     {
         GUILayout.BeginHorizontal();
@@ -194,6 +247,9 @@ public class SolarManagerEditor : Editor
         return !REFRESH_EDITOR;
     }
     
+    /// <summary>
+    /// Draws an object field for the sun's gameobject
+    /// </summary>
     void DrawSunObjectField()
     {
         GUILayout.BeginHorizontal();
@@ -205,6 +261,10 @@ public class SolarManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws the offset field for a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void DrawSeedOffsetField(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();
@@ -220,6 +280,10 @@ public class SolarManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws the distance from axis field for a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void DrawDistanceFromAxisField(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();
@@ -237,6 +301,10 @@ public class SolarManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws the mass field for a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void DrawMassField(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();
@@ -254,6 +322,10 @@ public class SolarManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws the body type field for a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void DrawBodyTypeField(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();
@@ -263,6 +335,10 @@ public class SolarManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws the name field for a solar body
+    /// </summary>
+    /// <param name="solarBody"></param>
     void DrawNameField(SolarBody solarBody)
     {
         GUILayout.BeginHorizontal();

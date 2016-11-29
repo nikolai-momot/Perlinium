@@ -8,7 +8,6 @@ public class SolarManagerEditor : Editor
     /// The editor target
     /// </summary>
     SolarManager solarManager;
-    
     /// <summary>
     /// If an item is removed then subsequent inspector calls will get a NullReference Error
     /// This is avoided by returning true ending of drawing the GUI early and redrawing it with the new items
@@ -34,7 +33,10 @@ public class SolarManagerEditor : Editor
         GUILayout.Space(5);
 
         if (DrawSolarBodies())
+        {
+            solarManager.updateSolarBodies();
             return;
+        }
     }
 
     /// <summary>
@@ -45,7 +47,7 @@ public class SolarManagerEditor : Editor
     {
         GUILayout.BeginVertical("box");
         
-            DrawSunObjectField();
+            //DrawSunObjectField();
 
             if (DrawAddSolarBodyButton())
                 return REFRESH_EDITOR;
@@ -250,16 +252,16 @@ public class SolarManagerEditor : Editor
     /// <summary>
     /// Draws an object field for the sun's gameobject
     /// </summary>
-    void DrawSunObjectField()
+    /*void DrawSunObjectField()
     {
         GUILayout.BeginHorizontal();
 
             string label = "Center of the solar system ";
-            solarManager.sun = (GameObject)EditorGUILayout.ObjectField(label, solarManager.sun, typeof(GameObject), true);
+            solarManager.solarAxis = (Transform)EditorGUILayout.ObjectField(label, solarManager.solarAxis, typeof(Transform), true);
             solarManager.updateSolarBodies();
 
         GUILayout.EndHorizontal();
-    }
+    }*/
 
     /// <summary>
     /// Draws the offset field for a solar body
@@ -292,9 +294,9 @@ public class SolarManagerEditor : Editor
 
             GUILayout.Label("Distance from Sun");
 
-            solarBody.distanceFromAxis = EditorGUILayout.IntField(solarBody.distanceFromAxis);
-
-            solarBody.transform.localPosition = new Vector3(0, 0, solarBody.distanceFromAxis);
+            solarBody.radius = EditorGUILayout.IntField(solarBody.radius);
+        
+            solarBody.SetOrbitRadius();
 
             GUILayout.Space(5);
 

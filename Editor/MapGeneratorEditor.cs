@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor (typeof (MapGenerator))]
+[CustomEditor (typeof (MapManager))]
 public class MapGeneratorEditor : Editor {
-
+    
     /// <summary>
     /// If an item is removed then subsequent inspector calls will get a NullReference Error
     /// This is avoided by returning true ending of drawing the GUI early and redrawing it with the new items
@@ -13,13 +13,13 @@ public class MapGeneratorEditor : Editor {
     /// <summary>
     /// The editor target
     /// </summary>
-    MapGenerator mapGenerator;
+    MapManager mapGenerator;
 
     /// <summary>
     /// Sets the editor target on editor enable
     /// </summary>
     void OnEnable() {
-        mapGenerator = (MapGenerator)target;
+        mapGenerator = (MapManager)target;
     }
 
     /// <summary>
@@ -27,11 +27,12 @@ public class MapGeneratorEditor : Editor {
     /// </summary>
 	public override void OnInspectorGUI(){
 
-        GUILayout.BeginVertical("box");
+       GUILayout.BeginVertical("box");
 
             DrawDefaultInspector();
 
-            DrawGenerateButton();
+            if (DrawGenerateButton())
+                return;
 
         GUILayout.EndVertical();
 	}
@@ -39,11 +40,14 @@ public class MapGeneratorEditor : Editor {
     /// <summary>
     /// Draws the generate map button
     /// </summary>
-    void DrawGenerateButton()
+    bool DrawGenerateButton()
     {
         if (GUILayout.Button("Generate"))
         {
             mapGenerator.GenerateMap();
+            return REFRESH_EDITOR;
         }
+
+        return !REFRESH_EDITOR;
     }
 }

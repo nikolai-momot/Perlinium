@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class CameraController : MonoBehaviour {
+public class CameraManager : MonoBehaviour {
 	
 	public Transform target;
 
@@ -33,7 +32,7 @@ public class CameraController : MonoBehaviour {
     public float zoomMax = 80.0f;
 
     private float zoom;     
-    Vector3 offset;
+    //Vector3 offset;
 
     void Awake() {
         cam = transform.GetComponent<Camera>();
@@ -45,7 +44,7 @@ public class CameraController : MonoBehaviour {
 		rotationYAxis = angles.y;
 		rotationXAxis = angles.x;
 
-        offset = transform.position - target.position;
+        //offset = transform.position - target.position;
 
         zoom = cam.fieldOfView;
     }

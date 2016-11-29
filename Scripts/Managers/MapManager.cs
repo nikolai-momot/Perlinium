@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(MeshGenerator))]
-public class MapGenerator : MonoBehaviour {	
+
+[RequireComponent(typeof(PaletteManager))]
+public class MapManager : MonoBehaviour {	
     public int mapSize = 241;
 	public float noiseScale;
 
@@ -21,17 +22,17 @@ public class MapGenerator : MonoBehaviour {
 	public int offsetSpeed;
 	public Vector2 offset;
 	
-	public bool useMesh;
+	//public bool useMesh;
 	public bool useFalloff;
 	public bool movingMap;
     
 	float[,] falloffMap;
 
 
-    [Range(0, 6)]
+    /*[Range(0, 6)]
     public int levelOfDetail;
     public float meshHeightMultiplier;
-    public AnimationCurve meshHeightCurve;
+    public AnimationCurve meshHeightCurve;*/
 
     SolarManager solarManager;
 
@@ -52,34 +53,14 @@ public class MapGenerator : MonoBehaviour {
 
     public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap, SolarBody solarBody)
     {
-        switch (solarBody.bodyType)
-        {
-            case BodyType.Moon:
-                if (useFalloff)
-                    solarBody.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapSize, offsetCurve)));
-                else
-                    solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
-                break;
-            case BodyType.Earth:
-                if(useMesh)
-                    solarBody.DrawMesh(MeshGenerator.GenerateTerrainMesh(noiseMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail), TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
-                else
-                    solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
-                break;
-            case BodyType.GasGiant:
-            case BodyType.Barren:
-            case BodyType.Sun:
-            default:
-                solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
-                break;
-        }
+        solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
     }
 
     public void GenerateMap() {
         if (solarManager == null)
             solarManager = FindObjectOfType<SolarManager>();
 
-        SolarBody solarBody = solarManager.sun.GetComponentInChildren<SolarBody>();
+        SolarBody solarBody = solarManager.GetComponentInChildren<SolarBody>();
 
         if (solarBody == null)
             solarBody = FindObjectOfType<SolarBody>();

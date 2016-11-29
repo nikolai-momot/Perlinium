@@ -14,12 +14,12 @@ public class Orbit : MonoBehaviour
     /// <summary>
     /// The speed at which this object rotates.
     /// </summary>
-    public float rotationRate = 1;
+    public float rotationRate = 2;
 
     /// <summary>
     /// The distance between this object and the object it orbits.
     /// </summary>
-    public float radius = 200;
+    public float radius ;
 
     /// <summary>
     /// The current angle of this object relative to Unity's virtual "North"

@@ -185,6 +185,7 @@ public class PaletteManagerEditor : Editor
     bool DrawAddPaletteButton()
     {
         GUILayout.Label("Total Terrain Palettes: " + paletteManager.palettes.Count);
+
         if (GUILayout.Button("Add Palette"))
         {
             AddPalette();

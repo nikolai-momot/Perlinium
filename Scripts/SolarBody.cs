@@ -11,21 +11,22 @@ public enum BodyType { Sun, Moon, Earth, Barren, GasGiant }
 public class SolarBody : MonoBehaviour
 {
     public BodyType bodyType;
+    public Orbit orbit;
 
     public List<SolarBody> satellites;
 
-    public int distanceFromAxis;
+    public int radius;
     public int mass;
     public int seedOffset;
-    
-    public int orbitSpeed;
-    public float rotationSpeed;
 
     public Transform axisOfOrbit;
+
     public Renderer textureRenderer;
-    public MeshFilter filter;
     public Material material;
 
+    void Start() {
+        orbit = transform.GetComponent<Orbit>();
+    }
 
     /// <summary>
     /// Assigns key variables and sets up orbit
@@ -33,38 +34,71 @@ public class SolarBody : MonoBehaviour
     /// <param name="center"></param>
     /// <param name="newDistance"></param>
     /// <param name="type"></param>
-	public void setup(Transform center, int newDistance, BodyType type, int orbitSpeed) {
-        bodyType = type;
-        axisOfOrbit = center;
-        
-        seedOffset = generateSeedOffset();
+	public void Setup(Transform axisOfOrbit, int radius, BodyType bodyType, float orbitSpeed) {
+        this.bodyType = bodyType;
 
-        distanceFromAxis = newDistance;
-        filter = transform.gameObject.GetComponent<MeshFilter>();
+        this.axisOfOrbit = axisOfOrbit;
+        
+        seedOffset = GenerateSeedOffset();
+
+        this.radius = radius;
+        
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
-        material = new Material(Shader.Find("Unlit/Texture"));
-        textureRenderer.material = material;
-
-        this.orbitSpeed = orbitSpeed;
-        rotationSpeed = 1f;
         
-        Orbit orbit = GetComponent<Orbit>();
-        orbit.Setup(center, orbitSpeed, newDistance);
+        material = new Material(Shader.Find("Unlit/Texture"));
+
+        textureRenderer.material = material;
+        
+        orbit = GetComponent<Orbit>();
+        orbit.Setup(axisOfOrbit, orbitSpeed, radius);
+    }
+
+    public void SetOrbitRadius()
+    {
+        if(orbit == null)
+            orbit = GetComponent<Orbit>();
+
+        transform.localPosition = new Vector3(0, 0, radius);
+
+        orbit.radius = radius;
+    }
+
+    /*public void SetSatelliteOrbitSpeed(float parentSpeed) {
+        if (orbit == null)
+            orbit = GetComponent<Orbit>();
+
+        orbit.orbitSpeed = parentSpeed * 2;
+    }*/
+
+    public float GetOrbitSpeed()
+    {
+        if(orbit == null)
+            orbit = GetComponent<Orbit>();
+
+        return orbit.orbitSpeed;
+    }
+
+    public void AddSatellite(SolarBody solarBody) {
+        satellites.Add(solarBody);
     }
 
     /// <summary>
-    /// Satellite version of the Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
+    /// Satellite Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
     /// </summary>
     /// <param name="center"></param>
-    public void setupSatellite(Transform center, int speed) {
+    public void SetupSatellite(Transform center, float speed) {
         int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x)/2 + 50;
 
-        setup(center, newDistance, BodyType.Moon, speed);
-        
+        Setup(center, newDistance, BodyType.Moon, speed*2);
+
         mass /= 15;
     }
 
-    private int generateSeedOffset()
+    public void ScaleBodySize() {
+        transform.localScale = new Vector3(mass, mass, mass);
+    }
+
+    int GenerateSeedOffset()
     {
         return Mathf.RoundToInt( Random.Range(2,2000) );
     }
@@ -74,39 +108,26 @@ public class SolarBody : MonoBehaviour
         textureRenderer.sharedMaterial.mainTexture = texture;
     }
 
-    public void DrawMesh(MeshData meshData, Texture2D texture)
-    {
-        filter = transform.gameObject.GetComponent<MeshFilter>();
-        filter.sharedMesh = meshData.CreateMesh();
-        textureRenderer.sharedMaterial.mainTexture = texture;
-    }
-
     void Awake() {
-
-        filter = transform.gameObject.GetComponent<MeshFilter>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
     }
-    
-    void OnMouseDown() {
+        
+    void OnValidate()
+    {
+        if(axisOfOrbit != null)
+            transform.localPosition = new Vector3(0,0, radius);
+    }
+
+    /*void OnMouseDown() {
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                GameObject.FindGameObjectsWithTag("MainCamera")[0].GetComponent<CameraController>().target = hit.collider.gameObject.transform;
+                GameObject.FindGameObjectsWithTag("MainCamera")[0].GetComponent<CameraManager>().target = hit.collider.gameObject.transform;
             }
         }
-    }
-    
-    void OnValidate()
-    {
-        if(axisOfOrbit != null)
-            transform.localPosition = new Vector3(0,0, adjustedDistance());
-    }
-
-    public int adjustedDistance() {
-        return Mathf.RoundToInt( axisOfOrbit.position.z ) + distanceFromAxis;
-    }
+    }*/
 }

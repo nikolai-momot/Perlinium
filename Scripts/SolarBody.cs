@@ -28,6 +28,18 @@ public class SolarBody : MonoBehaviour
         orbit = transform.GetComponent<Orbit>();
     }
 
+    void Awake()
+    {
+        material = new Material(Shader.Find("Unlit/Texture"));
+        textureRenderer.material = material;
+    }
+
+    void OnValidate()
+    {
+        if (axisOfOrbit != null)
+            transform.localPosition = new Vector3(0, 0, radius);
+    }
+   
     /// <summary>
     /// Assigns key variables and sets up orbit
     /// </summary>
@@ -42,7 +54,8 @@ public class SolarBody : MonoBehaviour
         seedOffset = GenerateSeedOffset();
 
         this.radius = radius;
-        
+        SetOrbitRadius();
+
         textureRenderer = transform.gameObject.GetComponent<Renderer>();
         
         material = new Material(Shader.Find("Unlit/Texture"));
@@ -53,6 +66,9 @@ public class SolarBody : MonoBehaviour
         orbit.Setup(axisOfOrbit, orbitSpeed, radius);
     }
 
+    /// <summary>
+    /// Fetches the orbit if it hasn't been already and adjusts the solarbody position according to it's radius
+    /// </summary>
     public void SetOrbitRadius()
     {
         if(orbit == null)
@@ -63,13 +79,10 @@ public class SolarBody : MonoBehaviour
         orbit.radius = radius;
     }
 
-    /*public void SetSatelliteOrbitSpeed(float parentSpeed) {
-        if (orbit == null)
-            orbit = GetComponent<Orbit>();
-
-        orbit.orbitSpeed = parentSpeed * 2;
-    }*/
-
+    /// <summary>
+    /// Fetches the Orbit object if it hadn't been already and returns the speed of its orbit
+    /// </summary>
+    /// <returns></returns>
     public float GetOrbitSpeed()
     {
         if(orbit == null)
@@ -78,6 +91,10 @@ public class SolarBody : MonoBehaviour
         return orbit.orbitSpeed;
     }
 
+    /// <summary>
+    /// Adds a solarbody to the list of sattellite solarbodies
+    /// </summary>
+    /// <param name="solarBody"></param>
     public void AddSatellite(SolarBody solarBody) {
         satellites.Add(solarBody);
     }
@@ -94,40 +111,28 @@ public class SolarBody : MonoBehaviour
         mass /= 15;
     }
 
-    public void ScaleBodySize() {
+    /// <summary>
+    /// Sets the the solarboy's size according to it's mass
+    /// </summary>
+    public void ScaleBodyMass() {
         transform.localScale = new Vector3(mass, mass, mass);
     }
-
+    
+    /// <summary>
+    /// Returns a number to offset the seed generating the texture
+    /// </summary>
+    /// <returns></returns>
     int GenerateSeedOffset()
     {
         return Mathf.RoundToInt( Random.Range(2,2000) );
     }
 
+    /// <summary>
+    /// Sets the given texture to wrap aroung the sphere
+    /// </summary>
+    /// <param name="texture"></param>
     public void DrawTexture(Texture2D texture)
     {
         textureRenderer.sharedMaterial.mainTexture = texture;
     }
-
-    void Awake() {
-        material = new Material(Shader.Find("Unlit/Texture"));
-        textureRenderer.material = material;
-    }
-        
-    void OnValidate()
-    {
-        if(axisOfOrbit != null)
-            transform.localPosition = new Vector3(0,0, radius);
-    }
-
-    /*void OnMouseDown() {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                GameObject.FindGameObjectsWithTag("MainCamera")[0].GetComponent<CameraManager>().target = hit.collider.gameObject.transform;
-            }
-        }
-    }*/
 }

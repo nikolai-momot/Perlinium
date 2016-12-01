@@ -17,8 +17,6 @@ public class SolarManager : MonoBehaviour
     void Start()
     {
         mapGenerator = GetComponent<MapManager>();
-
-        transform.GetComponentInChildren<CameraManager>().target = transform;
     }
 
     /// <summary>
@@ -47,28 +45,42 @@ public class SolarManager : MonoBehaviour
         if (solarBody == null)
             return;
 
-        solarBody.ScaleBodySize();
-        
+        solarBody.ScaleBodyMass();
+
+        updateSatellites(solarBody);
+    }
+
+    /// <summary>
+    /// Loops through the satellites of the provided solarbody
+    /// </summary>
+    /// <param name="solarBody"></param>
+    void updateSatellites(SolarBody solarBody)
+    {
         foreach (SolarBody satellite in solarBody.satellites)
             updateSolarBody(satellite);
     }
 
     /// <summary>
     /// Takes the planet farthest from the sun and returns their position
+    /// If there isn't one, it return a position close to the sun
     /// </summary>
     /// <returns></returns>
     public Vector3 getLastPlanetPosition()
     {
-        return (solarBodies.Count == 0) ? new Vector3(0, 0, 200) : getLastPlanet().transform.localPosition;
+        return (solarBodies.Count == 0) ? new Vector3(0,0,200) : getLastPlanet().transform.localPosition;
     }
-
+    
+    /// <summary>
+    /// Gets the SolarBody farthest from the sun
+    /// </summary>
+    /// <returns></returns>
     SolarBody getLastPlanet() {
         return solarBodies[solarBodies.Count - 1];
     }
 
     /// <summary>
     /// Adds a sattellite to the provided planet
-    /// Create gameobject, sets up the orbit and generates texture
+    /// Creates a gameobject, sets up the orbit and generates texture
     /// </summary>
     /// <param name="parent"></param>
     public void AddSatellite(SolarBody parent)
@@ -122,6 +134,11 @@ public class SolarManager : MonoBehaviour
         GenerateMap(newSolar);
     }
 
+    /// <summary>
+    /// Sets the name of the planet based on it's place in the solar system
+    /// </summary>
+    /// <param name="newBody"></param>
+    /// <param name="newSolar"></param>
     void SetPlanetName(GameObject newBody, SolarBody newSolar)
     {
         string newName = "Planet " + solarBodies.Count;
@@ -143,6 +160,10 @@ public class SolarManager : MonoBehaviour
         DestroyImmediate(solarBody.gameObject);
     }
 
+    /// <summary>
+    /// Instatiates a SolarBody Prefab and sets it's parent
+    /// </summary>
+    /// <returns></returns>
     GameObject CreateSolarObject()
     {
         GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
@@ -150,8 +171,12 @@ public class SolarManager : MonoBehaviour
         newBody.transform.SetParent(transform);
 
         return newBody;
-    }
-
+    } 
+    /// <summary>
+    /// Fetches the MapManager if it hasn't been already and
+    /// calls the method to generate texture maps for the solar system
+    /// </summary>
+    /// <param name="solarBody"></param>
     void GenerateMap(SolarBody solarBody)
     {
         if (mapGenerator == null)

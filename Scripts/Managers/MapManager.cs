@@ -12,9 +12,11 @@ public class MapManager : MonoBehaviour {
 
 	[Range(0,1)]
 	public float persistance;
+
+    [Range(0,1)]
 	public float lacunarity;
 	
-	public AnimationCurve offsetCurve;
+	public AnimationCurve falloffCurve;
 
 	public int seed;
 
@@ -22,41 +24,46 @@ public class MapManager : MonoBehaviour {
 	public int offsetSpeed;
 	public Vector2 offset;
 	
-	//public bool useMesh;
 	public bool useFalloff;
 	public bool movingMap;
     
 	float[,] falloffMap;
 
-
-    /*[Range(0, 6)]
-    public int levelOfDetail;
-    public float meshHeightMultiplier;
-    public AnimationCurve meshHeightCurve;*/
-
     SolarManager solarManager;
 
 	void Awake() {
         solarManager = FindObjectOfType<SolarManager>();
-        falloffMap = FalloffGenerator.GenerateFalloffMap (mapSize, offsetCurve);
 
-        GenerateMap();
+        GenerateMaps();
 	}
 
 	void Update(){
 		if (movingMap) {
 			offset.x += 0.01f;
 			offset.y += 0.01f;
-			GenerateMap();
+			GenerateMaps();
 		}
-	}
+    }
 
-    public void DrawMapInEditor(float[,] noiseMap, Color[] colourMap, SolarBody solarBody)
+    void OnValidate()
+    {
+        GenerateMaps();
+    }
+
+    /// <summary>
+    /// Draws the texture on the solarBody 
+    /// </summary>
+    /// <param name="colourMap"></param>
+    /// <param name="solarBody"></param>
+    public void DrawMapInEditor(Color[] colourMap, SolarBody solarBody)
     {
         solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
     }
 
-    public void GenerateMap() {
+    /// <summary>
+    /// Generates a texture map for every solarbody in the system
+    /// </summary>
+    public void GenerateMaps() {
         if (solarManager == null)
             solarManager = FindObjectOfType<SolarManager>();
 
@@ -69,6 +76,10 @@ public class MapManager : MonoBehaviour {
         GenerateSatelliteMaps(solarManager.solarBodies);
 	}
 
+    /// <summary>
+    /// Generates a texture map for every sattelite of the given planet
+    /// </summary>
+    /// <param name="solarBodies"></param>
     void GenerateSatelliteMaps(List<SolarBody> solarBodies) {
         foreach(SolarBody solarBody in solarBodies) {
 
@@ -80,54 +91,27 @@ public class MapManager : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Modifies the seedOffest of the given solarbody
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
     public int getSatelliteSeed(SolarBody solarBody) {
         return solarBody.seedOffset ^ 3 + seed;
     }
 
+    /// <summary>
+    /// Generates a texture map for the given solarbody
+    /// </summary>
+    /// <param name="solarBody"></param>
     public void GenerateMap(SolarBody solarBody)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapSize, mapSize, getSatelliteSeed(solarBody), noiseScale, octaves, persistance, lacunarity, offset);
-        
-        if(solarBody.bodyType == BodyType.GasGiant)
-            GasGiantGenerator.GenerateGasGiant(noiseMap);
+        float[,] noiseMap = NoiseGenerator.GenerateNoiseMap(mapSize, mapSize, getSatelliteSeed(solarBody), noiseScale, octaves, persistance, lacunarity, offset);
 
         List<PaletteColour> regionsInUse = FindObjectOfType<PaletteManager>().getPalette(solarBody.bodyType);
-        
-        Color[] colourMap = new Color[mapSize * mapSize];
-        
-        for (int y = 0; y < mapSize; y++)
-        {
-            for (int x = 0; x < mapSize; x++)
-            {
 
-                if (useFalloff)
-                    noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
-                
-                float currentHeight = noiseMap[x, y];
-
-                for (int i = 0; i < regionsInUse.Count; i++)
-                {
-                    if (currentHeight <= regionsInUse[i].height)
-                    {
-                        colourMap[y * mapSize + x] = regionsInUse[i].colour;
-                        break;
-                    }
-                }
-            }
-        }
-
-        DrawMapInEditor(noiseMap, colourMap, solarBody);
-    }
-
-    void OnValidate() {
-		if (lacunarity < 1) {
-			lacunarity = 1;
-		}
-
-		if (octaves < 0) {
-			octaves = 0;
-		}
-
-        falloffMap = FalloffGenerator.GenerateFalloffMap (mapSize, offsetCurve);
+        Color[] colourMap = MapGenerator.GenerateColourMap(noiseMap, solarBody, regionsInUse, falloffCurve);
+       
+        DrawMapInEditor(colourMap, solarBody);
     }
 }

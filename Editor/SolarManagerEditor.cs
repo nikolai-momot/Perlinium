@@ -317,7 +317,7 @@ public class SolarManagerEditor : Editor
 
             solarBody.mass = EditorGUILayout.IntField(solarBody.mass);
 
-            solarBody.transform.localScale = new Vector3(solarBody.mass, solarBody.mass, solarBody.mass);
+            solarBody.ScaleBodyMass();
 
             GUILayout.Space(5);
 

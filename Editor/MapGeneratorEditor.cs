@@ -44,7 +44,7 @@ public class MapGeneratorEditor : Editor {
     {
         if (GUILayout.Button("Generate"))
         {
-            mapGenerator.GenerateMap();
+            mapGenerator.GenerateMaps();
             return REFRESH_EDITOR;
         }
 

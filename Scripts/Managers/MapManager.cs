@@ -36,18 +36,22 @@ public class MapManager : MonoBehaviour {
 
         GenerateMaps();
 	}
-
-	void Update(){
-		if (movingMap) {
-			offset.x += 0.01f;
-			offset.y += 0.01f;
-			GenerateMaps();
-		}
-    }
-
+    
     void OnValidate()
     {
         GenerateMaps();
+    }
+
+    /// <summary>
+    /// Offsets the map of the sun texture to simulate movement
+    /// </summary>
+    /// <param name="solarBody"></param>
+    public void MoveSunMap(SolarBody solarBody)
+    {
+        offset.x += 0.01f;
+        offset.y += 0.01f;
+
+        GenerateMap(solarBody);
     }
 
     /// <summary>

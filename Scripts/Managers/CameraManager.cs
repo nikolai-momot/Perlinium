@@ -4,21 +4,37 @@ public class CameraManager : MonoBehaviour {
     /// <summary>
     /// The object that the camera focuses on
     /// </summary>
-    public GameObject target;       
+    GameObject target;       
 
     /// <summary>
     /// Offset distance between the target and camera
     /// </summary>
     Vector3 offset;
-    
-    void Start()
-    {
-        SetOffset();        
+
+    void Start() {
+        SetTarget( GameObject.Find("Sun") );
     }
     
     void LateUpdate()
     {
         OffsetCameraPosition();
+    }
+
+    /// <summary>
+    /// Sets the camera target and ajusts the camera position
+    /// </summary>
+    public void SetTarget(GameObject newTarget)
+    {
+        target = newTarget;
+
+        SetOffset();
+
+        SetOverviewPosition();
+    }
+
+    public GameObject GetTarget()
+    {
+        return target;
     }
 
     /// <summary>

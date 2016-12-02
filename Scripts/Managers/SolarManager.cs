@@ -14,9 +14,20 @@ public class SolarManager : MonoBehaviour
     /// </summary>
     MapManager mapGenerator;
 
+    SolarBody sun;
+
     void Start()
     {
+        sun = GameObject.Find("Sun").GetComponent<SolarBody>();
+
         mapGenerator = GetComponent<MapManager>();
+
+        mapGenerator.GenerateMaps();
+
+    }
+
+    void Update() {
+        mapGenerator.MoveSunMap(sun);
     }
 
     /// <summary>
@@ -98,6 +109,12 @@ public class SolarManager : MonoBehaviour
         GenerateMap(newSolar);
     }
 
+    /// <summary>
+    /// Sets the name of the satellite GameObject and SolarBody
+    /// </summary>
+    /// <param name="newBody"></param>
+    /// <param name="newSolar"></param>
+    /// <param name="parent"></param>
     void SetSatelliteName(GameObject newBody, SolarBody newSolar, SolarBody parent)
     {
         string newName = "Satellite " + parent.satellites.Count + " of " + parent.name;
@@ -161,6 +178,15 @@ public class SolarManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Gets the GameObject from the Sun solarbody
+    /// </summary>
+    /// <returns></returns>
+    public GameObject getSun()
+    {
+        return sun.gameObject;
+    }
+
+    /// <summary>
     /// Instatiates a SolarBody Prefab and sets it's parent
     /// </summary>
     /// <returns></returns>
@@ -172,7 +198,7 @@ public class SolarManager : MonoBehaviour
 
         return newBody;
     } 
-    /// <summary>
+        /// <summary>
     /// Fetches the MapManager if it hasn't been already and
     /// calls the method to generate texture maps for the solar system
     /// </summary>

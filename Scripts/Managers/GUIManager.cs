@@ -1,54 +1,54 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class GUIManager : MonoBehaviour
 {
-    public SolarManager solarManager;
-    CameraManager cameraManager;
-    public Dropdown dropdown;
-
+    SolarManager solarManager;
+    public CameraManager cameraManager;
     List<GameObject> solarBodies;
 
     void Start() {
-        cameraManager = GetComponent<CameraManager>();
+        solarManager = GetComponent<SolarManager>();
         FillSolarBodies();
-        dropdown.options.Clear();
-        foreach (GameObject solarbody in solarBodies)
-        {
-            dropdown.options.Add(new Dropdown.OptionData(solarbody.name));
-        }
     }
 
     void FillSolarBodies() {
         solarBodies = new List<GameObject>();
+
+        solarBodies.Add( solarManager.getSun() );
+
         foreach (SolarBody solarBody in solarManager.solarBodies)
         {
-            solarBodies.Add(solarBody.transform.gameObject);
-            AddSatellite(solarBody);
+            solarBodies.Add(solarBody.gameObject);
+            AddSatellites(solarBody);
         }
     }
 
-    void AddSatellite(SolarBody solarBody)
+    void AddSatellites(SolarBody solarBody)
     {
         foreach (SolarBody satellite in solarBody.satellites)
-            solarBodies.Add(solarBody.transform.gameObject);
+            solarBodies.Add(satellite.gameObject);
     }
 
-    /*public void NextButtonPress() {
-        cameraManager.target = GetNextSolarBody();
-    }
-
-    GameObject GetNextSolarBody()
+    public void ExitButtonPress()
     {
-        return ()
+        Application.Quit();
     }
 
-    int GetNextIndex() {
-        return (currentSolarBodyIndex > solarBodies.Count-1): 
+    public void NextButtonPress() {
+        int index = solarBodies.IndexOf(cameraManager.GetTarget());
+
+        cameraManager.SetTarget( (index+1 < 0) ? solarBodies[index] : solarBodies[index+1] );
     }
 
+    public void HomeButtonPress()
+    {
+        cameraManager.SetTarget(solarBodies[0]);
+    }
+    
     public void PrevButtonPress() {
+        int index = solarBodies.IndexOf(cameraManager.GetTarget());
 
-    }*/
+        cameraManager.SetTarget((index - 1 < 0) ? solarBodies[0] : solarBodies[index-1]);
+    }
 }

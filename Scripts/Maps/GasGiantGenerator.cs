@@ -15,7 +15,7 @@ public static class GasGiantGenerator
 
             for (int j = 0; j < size; j++)
             {
-                noiseMap[j, i] = Mathf.Clamp01(noiseMap[j, i] - averages[i] + offset);
+                noiseMap[j, i] = Mathf.Clamp01(averages[i] + offset);
             }
         }
     }

@@ -13,6 +13,7 @@ public class CameraManager : MonoBehaviour {
 
     void Start() {
         SetTarget( GameObject.Find("Sun") );
+        SetOffset();
     }
     
     void LateUpdate()
@@ -21,26 +22,9 @@ public class CameraManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Sets the camera target and ajusts the camera position
-    /// </summary>
-    public void SetTarget(GameObject newTarget)
-    {
-        target = newTarget;
-
-        SetOffset();
-
-        SetOverviewPosition();
-    }
-
-    public GameObject GetTarget()
-    {
-        return target;
-    }
-
-    /// <summary>
     /// Calculates and stores the offset value
     /// </summary>
-    void SetOffset()
+    public void SetOffset()
     {
         offset = transform.position - target.transform.position;
     }
@@ -48,28 +32,36 @@ public class CameraManager : MonoBehaviour {
     /// <summary>
     /// Set the position of the camera's transform to be the same as the target with the offset added
     /// </summary>
-    void OffsetCameraPosition()
+    public void OffsetCameraPosition()
     {
         transform.position = target.transform.position + offset;
     }
 
     /// <summary>
-    /// Lowers the camera to be closer to the target planet
+    /// Adjusts the camera to an optimal view of the target
     /// </summary>
-    void SetPlanetViewPosition()
-    {
-        SetOffset();
-
-        offset = new Vector3(offset.x, 500, offset.z);
+    public void ResetPosition() {
+        float x = target.transform.position.x;
+        float y = 1000;
+        float z = target.transform.position.z-250;
         
-        OffsetCameraPosition();
+        transform.position = new Vector3(x,y,z);
+    }
+    
+    /// <summary>
+    /// Sets the camera target and ajusts the camera position
+    /// </summary>
+    public void SetTarget(GameObject newTarget)
+    {
+        target = newTarget;
     }
 
     /// <summary>
-    /// Sets the camera high above the entire solar system
+    /// Returns the current target gameobject
     /// </summary>
-    void SetOverviewPosition()
+    /// <returns></returns>
+    public GameObject GetTarget()
     {
-        transform.localPosition = new Vector3(0, 4000, 0);
+        return target;
     }
 }

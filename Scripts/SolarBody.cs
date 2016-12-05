@@ -63,7 +63,20 @@ public class SolarBody : MonoBehaviour
         textureRenderer.material = material;
         
         orbit = GetComponent<Orbit>();
-        orbit.Setup(axisOfOrbit, orbitSpeed, radius);
+        orbit.Setup(axisOfOrbit, orbitSpeed, mass+100);
+    }
+    
+    /// <summary>
+    /// Satellite Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
+    /// </summary>
+    /// <param name="center"></param>
+    public void SetupSatellite(Transform center, float speed) {
+        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x)/2 + 50;
+        float newSpeed = speed *2; 
+
+        Setup(center, newDistance, BodyType.Moon, newSpeed);
+
+        mass /= 15;
     }
 
     /// <summary>
@@ -76,7 +89,7 @@ public class SolarBody : MonoBehaviour
 
         transform.localPosition = new Vector3(0, 0, radius);
 
-        orbit.radius = radius;
+        orbit.radius = radius/2;
     }
 
     /// <summary>
@@ -98,19 +111,7 @@ public class SolarBody : MonoBehaviour
     public void AddSatellite(SolarBody solarBody) {
         satellites.Add(solarBody);
     }
-
-    /// <summary>
-    /// Satellite Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
-    /// </summary>
-    /// <param name="center"></param>
-    public void SetupSatellite(Transform center, float speed) {
-        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x)/2 + 50;
-
-        Setup(center, newDistance, BodyType.Moon, speed*2);
-
-        mass /= 15;
-    }
-
+    
     /// <summary>
     /// Sets the the solarboy's size according to it's mass
     /// </summary>

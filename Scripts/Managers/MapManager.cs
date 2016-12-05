@@ -5,7 +5,9 @@ using System.Collections.Generic;
 [RequireComponent(typeof(PaletteManager))]
 public class MapManager : MonoBehaviour {	
     public int mapSize = 241;
-	public float noiseScale;
+
+    [Range(0.001f, 500)]
+    public float noiseScale;
 
 	[Range(1,5)]
 	public int octaves;
@@ -19,14 +21,9 @@ public class MapManager : MonoBehaviour {
 	public AnimationCurve falloffCurve;
 
 	public int seed;
-
-	[Range(20, 100)]
-	public int offsetSpeed;
-	public Vector2 offset;
-	
-	public bool useFalloff;
-	public bool movingMap;
     
+	Vector2 offset;
+	
 	float[,] falloffMap;
 
     SolarManager solarManager;
@@ -61,22 +58,23 @@ public class MapManager : MonoBehaviour {
     /// <param name="solarBody"></param>
     public void DrawMapInEditor(Color[] colourMap, SolarBody solarBody)
     {
-        solarBody.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize));
+        Texture2D texture = TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize);
+
+        solarBody.DrawTexture(texture);
     }
 
     /// <summary>
     /// Generates a texture map for every solarbody in the system
     /// </summary>
-    public void GenerateMaps() {
+    public void GenerateMaps()
+    {
         if (solarManager == null)
             solarManager = FindObjectOfType<SolarManager>();
 
-        SolarBody solarBody = solarManager.GetComponentInChildren<SolarBody>();
+        SolarBody sun = GameObject.Find("Sun").GetComponent<SolarBody>(); 
+        
+        GenerateMap(sun);
 
-        if (solarBody == null)
-            solarBody = FindObjectOfType<SolarBody>();
-
-        GenerateMap(solarBody);
         GenerateSatelliteMaps(solarManager.solarBodies);
 	}
 
@@ -85,13 +83,12 @@ public class MapManager : MonoBehaviour {
     /// </summary>
     /// <param name="solarBodies"></param>
     void GenerateSatelliteMaps(List<SolarBody> solarBodies) {
-        foreach(SolarBody solarBody in solarBodies) {
-
+        foreach (SolarBody solarBody in solarBodies) {
+            
             if (solarBody == null)
                 continue;
 
             GenerateMap(solarBody);
-            GenerateSatelliteMaps(solarBody.satellites);
         }
     }
 
@@ -100,7 +97,7 @@ public class MapManager : MonoBehaviour {
     /// </summary>
     /// <param name="solarBody"></param>
     /// <returns></returns>
-    public int getSatelliteSeed(SolarBody solarBody) {
+    public int GetSatelliteSeed(SolarBody solarBody) {
         return solarBody.seedOffset ^ 3 + seed;
     }
 
@@ -110,12 +107,14 @@ public class MapManager : MonoBehaviour {
     /// <param name="solarBody"></param>
     public void GenerateMap(SolarBody solarBody)
     {
-        float[,] noiseMap = NoiseGenerator.GenerateNoiseMap(mapSize, mapSize, getSatelliteSeed(solarBody), noiseScale, octaves, persistance, lacunarity, offset);
+        float[,] noiseMap = new float[mapSize, mapSize];
 
-        List<PaletteColour> regionsInUse = FindObjectOfType<PaletteManager>().getPalette(solarBody.bodyType);
+        int satelitteSeed = GetSatelliteSeed(solarBody);
 
-        Color[] colourMap = MapGenerator.GenerateColourMap(noiseMap, solarBody, regionsInUse, falloffCurve);
-       
+        NoiseGenerator.GenerateNoiseMap(noiseMap, satelitteSeed, noiseScale, octaves, persistance, lacunarity, offset);
+        
+        Color[] colourMap = ColourMapGenerator.GetColourMap(noiseMap, solarBody, falloffCurve);
+        
         DrawMapInEditor(colourMap, solarBody);
     }
 }

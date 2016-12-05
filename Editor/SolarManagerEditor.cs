@@ -63,6 +63,9 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawSolarBodies()
     {
+        if(solarManager.solarBodies.Count == 0)
+            return !REFRESH_EDITOR;
+
         GUILayout.BeginVertical();
 
             foreach (SolarBody solarBody in solarManager.solarBodies)
@@ -84,6 +87,7 @@ public class SolarManagerEditor : Editor
         if (solarBody == null)
             return REFRESH_EDITOR;
 
+        
         GUILayout.BeginHorizontal("box");
 
             GUILayout.BeginVertical();
@@ -92,17 +96,22 @@ public class SolarManagerEditor : Editor
                     return REFRESH_EDITOR;
 
                 if (DrawSolarBodyMain(solarBody))
-                   return REFRESH_EDITOR;
+                    return REFRESH_EDITOR;
 
                 if (DrawAddSatelliteButton(solarBody))
                     return REFRESH_EDITOR;
 
-                if (DrawSatellites(solarBody))
-                    return REFRESH_EDITOR;
+                if (solarBody.satellites.Count != 0)
+                {
+                    if (DrawSatellites(solarBody))
+                        return REFRESH_EDITOR;
+                }
+        
 
             GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
+        
 
         return !REFRESH_EDITOR;
     }
@@ -114,12 +123,15 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawSatellites(SolarBody parent)
     {
-        GUILayout.BeginVertical();
+        if (parent == null)
+            return REFRESH_EDITOR;
 
+        GUILayout.BeginVertical();
+        
             foreach (SolarBody satellite in parent.satellites)
                 if (DrawSatellite(satellite))
                     return REFRESH_EDITOR;
-
+        
         GUILayout.EndVertical();
 
         return !REFRESH_EDITOR;
@@ -132,6 +144,9 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawSatellite(SolarBody satellite)
     {
+        if (satellite == null)
+            return !REFRESH_EDITOR;
+
         GUILayout.BeginHorizontal("box");
 
             GUILayout.BeginVertical();
@@ -156,6 +171,9 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawSolarBodyMain(SolarBody solarBody)
     {
+        if (solarBody == null)
+            return REFRESH_EDITOR;
+
         GUILayout.BeginVertical();
 
             DrawNameField(solarBody);
@@ -236,6 +254,7 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawRemoveSatelliteButton(SolarBody satellite)
     {
+
         GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Remove Satellite"))

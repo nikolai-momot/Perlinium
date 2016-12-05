@@ -137,7 +137,7 @@ public class PaletteManagerEditor : Editor
     /// <param name="palette"></param>
     /// <returns></returns>
     bool DrawColours(Palette palette) {
-        foreach (PaletteColour colour in palette.palette)
+        foreach (PaletteColour colour in palette.colours)
         {
             if (DrawColour(palette, colour))
                 return REFRESH_EDITOR;
@@ -265,7 +265,7 @@ public class PaletteManagerEditor : Editor
     /// <param name="palettes"></param>
     void AddColour(Palette palettes)
     {
-        palettes.palette.Add(new PaletteColour());
+        palettes.colours.Add(new PaletteColour());
     }
 
     /// <summary>
@@ -275,6 +275,6 @@ public class PaletteManagerEditor : Editor
     /// <param name="palette"></param>
     void RemoveColour(Palette palettes, PaletteColour palette)
     {
-        palettes.palette.Remove(palette);
+        palettes.colours.Remove(palette);
     }
 }

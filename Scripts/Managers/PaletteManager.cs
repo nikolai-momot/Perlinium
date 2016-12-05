@@ -4,28 +4,39 @@ using System.Collections.Generic;
 public class PaletteManager : MonoBehaviour{
 	public List<Palette> palettes;
    
-    public List<PaletteColour> getPalette(BodyType type)
+    /// <summary>
+    /// Gets a palette of a specified body type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public Palette getPalette(BodyType type)
     {
         foreach (Palette palette in palettes)
             if (palette.bodyType == type)
-                return palette.palette;
+                return palette;
 
-        return new List<PaletteColour>();
+        return new Palette();
     }
 }
 
+/// <summary>
+/// A palette of a body type
+/// </summary>
 [System.Serializable]
 public class Palette {
 	public string name;
     public BodyType bodyType;
-    public List<PaletteColour> palette;
+    public List<PaletteColour> colours;
 
     public Palette() {
         name = "";
-        palette = new List<PaletteColour>();
+        colours = new List<PaletteColour>();
     }
 }
 
+/// <summary>
+/// A colour in a body type palette
+/// </summary>
 [System.Serializable]
 public class PaletteColour
 {

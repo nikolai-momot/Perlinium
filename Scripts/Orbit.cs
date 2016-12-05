@@ -19,7 +19,7 @@ public class Orbit : MonoBehaviour
     /// <summary>
     /// The distance between this object and the object it orbits.
     /// </summary>
-    public float radius ;
+    public float radius;
 
     /// <summary>
     /// The current angle of this object relative to Unity's virtual "North"

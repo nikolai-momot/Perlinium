@@ -23,8 +23,6 @@ public class MapManager : MonoBehaviour {
 	public int seed;
     
 	Vector2 offset;
-	
-	float[,] falloffMap;
 
     SolarManager solarManager;
 

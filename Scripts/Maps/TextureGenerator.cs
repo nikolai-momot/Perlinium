@@ -3,7 +3,7 @@
 public static class TextureGenerator {
 	
     /// <summary>
-    /// Creates a texture froma colour map
+    /// Creates a texture from a colour map
     /// </summary>
     /// <param name="colourMap"></param>
     /// <param name="width"></param>

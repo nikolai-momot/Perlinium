@@ -55,7 +55,7 @@ public static class ColourMapGenerator
         if (solarBody.bodyType == BodyType.GasGiant)
             GasGiantGenerator.GenerateGasGiant(noiseMap);
         else if(useFalloff)
-            FalloffGenerator.GenerateFalloffMap(noiseMap, falloffCurve);
+            FalloffGenerator.ApplyFalloffMap(noiseMap, falloffCurve);
     }
 
     /// <summary>

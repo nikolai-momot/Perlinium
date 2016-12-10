@@ -40,10 +40,10 @@ public class CameraManager : MonoBehaviour {
     /// <summary>
     /// Adjusts the camera to an optimal view of the target
     /// </summary>
-    public void ResetPosition() {
+    public void SetPosition() {
         float x = target.transform.position.x;
-        float y = 1000;
-        float z = target.transform.position.z-250;
+        float y = 250;
+        float z = target.transform.position.z-500;
         
         transform.position = new Vector3(x,y,z);
     }

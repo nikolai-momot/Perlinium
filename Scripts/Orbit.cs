@@ -3,56 +3,138 @@
 public class Orbit : MonoBehaviour
 {
     /// <summary>
-    /// The object that this object will orbit around
+    /// The solarbody that this object will orbit around
     /// </summary>
-    public Transform orbitAround;
+    public Transform axis;
 
     /// <summary>
-    /// The speed at which this object orbits.
+    /// The speed at which this object orbits about the axis
     /// </summary>
     public float orbitSpeed = 7;
+    
     /// <summary>
-    /// The speed at which this object rotates.
+    /// The speed at which this object rotates about itself
     /// </summary>
     public float rotationRate = 2;
 
     /// <summary>
-    /// The distance between this object and the object it orbits.
+    /// The distance between this object and it's axis
     /// </summary>
     public float radius;
 
     /// <summary>
-    /// The current angle of this object relative to Unity's virtual "North"
+    /// 
     /// </summary>
-    float angle;
+    float satelliteOffset;
 
-    public void Setup(Transform orbitAround, float orbitSpeed, float radius) {
-        this.orbitAround = orbitAround;
-        this.orbitSpeed = orbitSpeed;
-        this.radius = radius;
-    }
-
+    /// <summary>
+    /// The current angle of this object relative to the "North" of it's axis
+    /// </summary>
+    float angle = 0f;
+    
     void Start()
     {
-        // Randomise the starting point of each planet
-        angle = Random.Range(0, 360);
+        SetRandomStartingAngle();
     }
 
     void Update()
     {
-        // The origin of the circle should be the centre of the object around which this object orbits
-        float originX = orbitAround.localPosition.x;
-        float originY = orbitAround.localPosition.z;
+        MoveSolarBody();
+        RotateSolarBody();
+    }
 
-        // The X and Y coordinates of this object in a 2D space, calculated using the polar coordinates (Radius and Angle) of this object
-        float circleX = (originX + (radius * Mathf.Cos(angle)));
-        float circleY = (originY + (radius * Mathf.Sin(angle)));
+    /*void OnValidate()
+    {
+        if (axis != null)
+            transform.localPosition = new Vector3(0, 0, radius);
+    }*/
 
-        // Update this object to its new position and rotation
-        transform.localPosition = new Vector3(circleX, orbitAround.localPosition.y, circleY);
-        transform.Rotate(new Vector3(0, -rotationRate, 0));
+    /// <summary>
+    /// Adjusts orbit variables to match the solarBody
+    /// </summary>
+    /// <param name="orbitAround"></param>
+    /// <param name="orbitSpeed"></param>
+    /// <param name="radius"></param>
+    public void Setup(float distanceFromSun, Transform orbitAround, bool isSatelitte)
+    {
+        axis = orbitAround;
 
-        // Increase the angle according to the given Orbit Speed
+        orbitSpeed = (isSatelitte)? orbitSpeed * 2.5f: orbitSpeed;
+        
+        radius += orbitAround.localScale.x;
+
+        float adjustedDistance = (isSatelitte)? distanceFromSun + radius + 50 : distanceFromSun + radius + 400;
+        
+        radius = (isSatelitte) ? radius: adjustedDistance;
+
+        transform.localPosition = new Vector3(0, 0, adjustedDistance);
+    }
+
+    /// <summary>
+    /// Sets the solarbody's starting position at a random point relative to the object its orbiting
+    /// </summary>
+    void SetRandomStartingAngle()
+    {
+        angle = Random.Range(0, 360);
+    }
+    
+    /// <summary>
+    /// Calculates the new orbit position and moves the solarBody accordingly
+    /// </summary>
+    public void MoveSolarBody()
+    {
+        if (axis == null)
+            return;
+
+        UpdateAngle();
+
+        float circleX = GetXCoordinate();
+        float circleY = GetYCoordinate();
+
+        UpdatePosition(circleX, circleY);
+    }
+
+    /// <summary>
+    /// Update angle according to orbit speed 
+    /// </summary>
+    void UpdateAngle()
+    {
         angle += (orbitSpeed * Time.deltaTime) / 10;
+    }
+
+    /// <summary>
+    /// Uses the Sin function to calculate the y coordinate
+    /// </summary>
+    /// <returns></returns>
+    float GetYCoordinate()
+    {
+        return ( axis.localPosition.z + ( radius * Mathf.Sin( angle ) ) );
+    }
+
+    /// <summary>
+    /// Uses the cos function to calculate the x coordinate 
+    /// </summary>
+    /// <returns></returns>
+    float GetXCoordinate()
+    {
+        return ( axis.localPosition.x + ( radius * Mathf.Cos( angle ) ) );
+    }
+
+    /// <summary>
+    /// Updates the solabody's position
+    /// </summary>
+    /// <param name="circleX"></param>
+    /// <param name="circleY"></param>
+    void UpdatePosition(float circleX, float circleY)
+    {
+        transform.localPosition = new Vector3(circleX, axis.localPosition.y, circleY);
+    }
+
+    /// <summary>
+    /// Rotates the object about itself
+    /// </summary>
+    void RotateSolarBody()
+    {
+        transform.Rotate(new Vector3(0, -rotationRate, 0));
     }
 }

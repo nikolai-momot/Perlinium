@@ -115,7 +115,6 @@ public static class NoiseGenerator {
             float x = random.Next(-100000, 100000) + offset.x;
             float y = random.Next(-100000, 100000) + offset.y;
             octaves[i] = new Vector2(x, y);
-            Debug.Log("(x,y): "+ octaves[i].ToString());
         }
 
         return octaves;

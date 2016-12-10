@@ -43,24 +43,12 @@ public class MapManager : MonoBehaviour {
     /// <param name="solarBody"></param>
     public void MoveSunMap(SolarBody solarBody)
     {
-        offset.x += 0.01f;
-        offset.y += 0.01f;
+        offset.x += 0.1f;
+        offset.y += 0.1f;
 
         GenerateMap(solarBody);
     }
-
-    /// <summary>
-    /// Draws the texture on the solarBody 
-    /// </summary>
-    /// <param name="colourMap"></param>
-    /// <param name="solarBody"></param>
-    public void DrawMapInEditor(Color[] colourMap, SolarBody solarBody)
-    {
-        Texture2D texture = TextureGenerator.TextureFromColourMap(colourMap, mapSize, mapSize);
-
-        solarBody.DrawTexture(texture);
-    }
-
+    
     /// <summary>
     /// Generates a texture map for every solarbody in the system
     /// </summary>
@@ -73,7 +61,7 @@ public class MapManager : MonoBehaviour {
         
         GenerateMap(sun);
 
-        GenerateSatelliteMaps(solarManager.solarBodies);
+        GenerateSatelliteMaps(solarManager.GetSolarBodies());
 	}
 
     /// <summary>
@@ -83,10 +71,14 @@ public class MapManager : MonoBehaviour {
     void GenerateSatelliteMaps(List<SolarBody> solarBodies) {
         foreach (SolarBody solarBody in solarBodies) {
             
-            if (solarBody == null)
+            if (solarBody == null) {
+                solarManager.RemoveSolarBody(solarBody);
                 continue;
+            }
 
             GenerateMap(solarBody);
+
+            GenerateSatelliteMaps(solarBody.satellites);
         }
     }
 
@@ -100,19 +92,59 @@ public class MapManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// Generates a texture map for the given solarbody
+    /// Draws a colour map and uses it to generate a texture map for the given solarbody
     /// </summary>
     /// <param name="solarBody"></param>
     public void GenerateMap(SolarBody solarBody)
+    {
+        Color[] colourMap = DrawMap(solarBody);
+
+        CreateTexture(colourMap, solarBody);
+    }
+
+    /// <summary>
+    /// Creates a noise map, uses it to make a colour map
+    /// </summary>
+    /// <param name="solarBody"></param>
+    /// <returns></returns>
+    Color[] DrawMap(SolarBody solarBody)
     {
         float[,] noiseMap = new float[mapSize, mapSize];
 
         int satelitteSeed = GetSatelliteSeed(solarBody);
 
         NoiseGenerator.GenerateNoiseMap(noiseMap, satelitteSeed, noiseScale, octaves, persistance, lacunarity, offset);
-        
+
         Color[] colourMap = ColourMapGenerator.GetColourMap(noiseMap, solarBody, falloffCurve);
-        
-        DrawMapInEditor(colourMap, solarBody);
+        return colourMap;
+    }
+
+    /// <summary>
+    /// Creates the texture on the solarBody 
+    /// </summary>
+    /// <param name="colourMap"></param>
+    /// <param name="solarBody"></param>
+    void CreateTexture(Color[] colourMap, SolarBody solarBody)
+    {
+        Texture2D texture = TextureFromColourMap(colourMap, mapSize, mapSize);
+
+        solarBody.DrawTexture(texture);
+    }
+
+    /// <summary>
+    /// Creates a texture from a colour map
+    /// </summary>
+    /// <param name="colourMap"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <returns></returns>
+	Texture2D TextureFromColourMap(Color[] colourMap, int width, int height)
+    {
+        Texture2D texture = new Texture2D(width, height);
+        texture.filterMode = FilterMode.Point;
+        texture.wrapMode = TextureWrapMode.Clamp;
+        texture.SetPixels(colourMap);
+        texture.Apply();
+        return texture;
     }
 }

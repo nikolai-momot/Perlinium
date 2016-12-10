@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GUIManager : MonoBehaviour
 {
-    public CameraManager cameraManager;
+    CameraManager cameraManager;
     
     SolarManager solarManager;
 
@@ -11,12 +11,16 @@ public class GUIManager : MonoBehaviour
     /// Navigable solarBodies
     /// </summary>
     List<GameObject> solarBodies;
+    
+    void Awake()
+    {
+        cameraManager = GameObject.Find("Camera").GetComponent<CameraManager>();
 
-    void Start() {
         solarManager = GetComponent<SolarManager>();
+
         FillSolarBodies();
     }
-
+    
     /// <summary>
     /// Adds all the solar bodies in the system to a list of navigable gameobjects
     /// </summary>
@@ -25,7 +29,7 @@ public class GUIManager : MonoBehaviour
 
         solarBodies.Add( solarManager.getSun() );
 
-        foreach (SolarBody solarBody in solarManager.solarBodies)
+        foreach (SolarBody solarBody in solarManager.GetSolarBodies())
         {
             solarBodies.Add(solarBody.gameObject);
             AddSatellites(solarBody);
@@ -57,7 +61,7 @@ public class GUIManager : MonoBehaviour
         int index = solarBodies.IndexOf(cameraManager.GetTarget());
 
         cameraManager.SetTarget( (index+1 == solarBodies.Count) ? solarBodies[index] : solarBodies[index+1] );
-        cameraManager.ResetPosition();
+        cameraManager.SetPosition();
         cameraManager.SetOffset();
     }
 
@@ -68,7 +72,7 @@ public class GUIManager : MonoBehaviour
         int index = solarBodies.IndexOf(cameraManager.GetTarget());
 
         cameraManager.SetTarget((index - 1 < 0) ? solarBodies[0] : solarBodies[index-1]);
-        cameraManager.ResetPosition();
+        cameraManager.SetPosition();
         cameraManager.SetOffset();
     }
 }

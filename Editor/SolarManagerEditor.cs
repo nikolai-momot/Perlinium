@@ -8,6 +8,7 @@ public class SolarManagerEditor : Editor
     /// The editor target
     /// </summary>
     SolarManager solarManager;
+
     /// <summary>
     /// If an item is removed then subsequent inspector calls will get a NullReference Error
     /// This is avoided by returning true ending of drawing the GUI early and redrawing it with the new items
@@ -46,14 +47,32 @@ public class SolarManagerEditor : Editor
     bool DrawMainControlBox()
     {
         GUILayout.BeginVertical("box");
-        
-            //DrawSunObjectField();
+
+            if (DrawSunBox())
+                return REFRESH_EDITOR;
+            
+            GUILayout.Space(20);
 
             if (DrawAddSolarBodyButton())
                 return REFRESH_EDITOR;
-
+            
         GUILayout.EndVertical();
 
+        return !REFRESH_EDITOR;
+    }
+
+    /// <summary>
+    /// Draws a solarBody editor box
+    /// </summary>
+    bool DrawSunBox()
+    {
+        SolarBody sun = solarManager.getSun().GetComponent<SolarBody>();
+
+        GUILayout.BeginHorizontal("box");
+            if(DrawSolarBodyMain(sun))
+                return REFRESH_EDITOR;
+        GUILayout.EndHorizontal();
+        
         return !REFRESH_EDITOR;
     }
 
@@ -63,12 +82,12 @@ public class SolarManagerEditor : Editor
     /// <returns></returns>
     bool DrawSolarBodies()
     {
-        if(solarManager.solarBodies.Count == 0)
+        if(solarManager.GetSolarBodies().Count == 0)
             return !REFRESH_EDITOR;
 
         GUILayout.BeginVertical();
 
-            foreach (SolarBody solarBody in solarManager.solarBodies)
+            foreach (SolarBody solarBody in solarManager.GetSolarBodies())
                 if (DrawSolarBody(solarBody))
                     return REFRESH_EDITOR;
             
@@ -85,7 +104,10 @@ public class SolarManagerEditor : Editor
     bool DrawSolarBody(SolarBody solarBody)
     {
         if (solarBody == null)
+        {
+            solarManager.RemoveSolarBody(solarBody);
             return REFRESH_EDITOR;
+        }
 
         
         GUILayout.BeginHorizontal("box");
@@ -269,20 +291,6 @@ public class SolarManagerEditor : Editor
     }
     
     /// <summary>
-    /// Draws an object field for the sun's gameobject
-    /// </summary>
-    /*void DrawSunObjectField()
-    {
-        GUILayout.BeginHorizontal();
-
-            string label = "Center of the solar system ";
-            solarManager.solarAxis = (Transform)EditorGUILayout.ObjectField(label, solarManager.solarAxis, typeof(Transform), true);
-            solarManager.updateSolarBodies();
-
-        GUILayout.EndHorizontal();
-    }*/
-
-    /// <summary>
     /// Draws the offset field for a solar body
     /// </summary>
     /// <param name="solarBody"></param>
@@ -313,10 +321,8 @@ public class SolarManagerEditor : Editor
 
             GUILayout.Label("Distance from Sun");
 
-            solarBody.radius = EditorGUILayout.IntField(solarBody.radius);
-        
-            solarBody.SetOrbitRadius();
-
+            solarBody.SetRadius( EditorGUILayout.FloatField(solarBody.GetRadius()) );
+           
             GUILayout.Space(5);
 
         GUILayout.EndHorizontal();

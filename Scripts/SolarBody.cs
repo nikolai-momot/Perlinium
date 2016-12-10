@@ -11,18 +11,15 @@ public enum BodyType { Sun, Moon, Earth, Barren, GasGiant }
 public class SolarBody : MonoBehaviour
 {
     public BodyType bodyType;
-    public Orbit orbit;
+    Orbit orbit;
 
     public List<SolarBody> satellites;
-
-    public int radius;
+    
     public int mass;
     public int seedOffset;
-
-    public Transform axisOfOrbit;
-
-    public Renderer textureRenderer;
-    public Material material;
+    
+    Renderer textureRenderer;
+    Material material;
 
     void Start() {
         orbit = transform.GetComponent<Orbit>();
@@ -30,66 +27,54 @@ public class SolarBody : MonoBehaviour
 
     void Awake()
     {
+        textureRenderer = transform.gameObject.GetComponent<Renderer>();
         material = new Material(Shader.Find("Unlit/Texture"));
         textureRenderer.material = material;
     }
-
-    void OnValidate()
-    {
-        if (axisOfOrbit != null)
-            transform.localPosition = new Vector3(0, 0, radius);
-    }
-   
+    
     /// <summary>
     /// Assigns key variables and sets up orbit
     /// </summary>
     /// <param name="center"></param>
     /// <param name="newDistance"></param>
     /// <param name="type"></param>
-	public void Setup(Transform axisOfOrbit, int radius, BodyType bodyType, float orbitSpeed) {
+	public void Setup(float distanceFromSun, Transform axisOfOrbit, BodyType bodyType, bool isSatelitte) {
+
         this.bodyType = bodyType;
-
-        this.axisOfOrbit = axisOfOrbit;
         
-        seedOffset = GenerateSeedOffset();
-
-        this.radius = radius;
-        SetOrbitRadius();
-
-        textureRenderer = transform.gameObject.GetComponent<Renderer>();
+        this.seedOffset = GenerateSeedOffset();
+        
+        mass = (isSatelitte) ? Mathf.RoundToInt( mass / 15f ) : mass;
         
         material = new Material(Shader.Find("Unlit/Texture"));
 
+        textureRenderer = transform.gameObject.GetComponent<Renderer>();
         textureRenderer.material = material;
         
         orbit = GetComponent<Orbit>();
-        orbit.Setup(axisOfOrbit, orbitSpeed, mass+100);
+        orbit.Setup(distanceFromSun, axisOfOrbit, isSatelitte);
     }
     
     /// <summary>
-    /// Satellite Setup method which calculates a shorter distance from their axisOfOrbit and faster orbitSpeed
-    /// </summary>
-    /// <param name="center"></param>
-    public void SetupSatellite(Transform center, float speed) {
-        int newDistance = Mathf.RoundToInt(center.localPosition.z + center.localScale.x)/2 + 50;
-        float newSpeed = speed *2; 
-
-        Setup(center, newDistance, BodyType.Moon, newSpeed);
-
-        mass /= 15;
-    }
-
-    /// <summary>
     /// Fetches the orbit if it hasn't been already and adjusts the solarbody position according to it's radius
     /// </summary>
-    public void SetOrbitRadius()
+    public void SetRadius(float radius)
     {
         if(orbit == null)
             orbit = GetComponent<Orbit>();
+        
+        orbit.radius = radius;
+    }
 
-        transform.localPosition = new Vector3(0, 0, radius);
+    /// <summary>
+    /// Returns the radius value from the Orbit object
+    /// </summary>
+    /// <returns></returns>
+    public float GetRadius() {
+        if (orbit == null)
+            orbit = GetComponent<Orbit>(); 
 
-        orbit.radius = radius/2;
+        return orbit.radius;
     }
 
     /// <summary>
@@ -125,7 +110,7 @@ public class SolarBody : MonoBehaviour
     /// <returns></returns>
     int GenerateSeedOffset()
     {
-        return Mathf.RoundToInt( Random.Range(2,2000) );
+        return Mathf.RoundToInt( Random.Range(2,2000)*mass );
     }
 
     /// <summary>
@@ -134,6 +119,10 @@ public class SolarBody : MonoBehaviour
     /// <param name="texture"></param>
     public void DrawTexture(Texture2D texture)
     {
+        if (textureRenderer == null)
+            textureRenderer = transform.gameObject.GetComponent<Renderer>();
+
         textureRenderer.sharedMaterial.mainTexture = texture;
     }
 }
+    

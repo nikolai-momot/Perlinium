@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(MapManager))]
 public class SolarManager : MonoBehaviour
@@ -12,22 +13,21 @@ public class SolarManager : MonoBehaviour
     /// <summary>
     /// Generates the map that forms the solarbody texture
     /// </summary>
-    MapManager mapGenerator;
+    MapManager mapManager;
 
     SolarBody sun;
 
-    void Start()
+    void Awake()
     {
         sun = GameObject.Find("Sun").GetComponent<SolarBody>();
 
-        mapGenerator = GetComponent<MapManager>();
+        mapManager = GetComponent<MapManager>();
 
-        mapGenerator.GenerateMaps();
-
+        mapManager.GenerateMaps();
     }
 
     void Update() {
-        mapGenerator.MoveSunMap(sun);
+        mapManager.MoveSunMap(sun);
     }
 
     /// <summary>
@@ -39,12 +39,26 @@ public class SolarManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Checks if the solarBody is null and removes it from the list if it is
+    /// </summary>
+    /// <param name="solarBody"></param>
+    void CheckSolarBody(SolarBody solarBody)
+    {
+        if (solarBody == null)
+            solarBodies.Remove(solarBody);
+    }
+
+    /// <summary>
     /// Loops through solar bodies within the system and updates their respective properties
     /// </summary>
     public void updateSolarBodies()
     {
         foreach (SolarBody solarBody in solarBodies)
+        {
+            CheckSolarBody(solarBody);
+
             updateSolarBody(solarBody);
+        }
     }
 
     /// <summary>
@@ -53,8 +67,7 @@ public class SolarManager : MonoBehaviour
     /// <param name="solarBody"></param>
     void updateSolarBody(SolarBody solarBody)
     {
-        if (solarBody == null)
-            return;
+        CheckSolarBody(solarBody);
 
         solarBody.ScaleBodyMass();
 
@@ -68,7 +81,15 @@ public class SolarManager : MonoBehaviour
     void updateSatellites(SolarBody solarBody)
     {
         foreach (SolarBody satellite in solarBody.satellites)
+        {
+            if (satellite == null)
+            {
+                solarBody.satellites.Remove(satellite);
+                return;
+            }
+
             updateSolarBody(satellite);
+        }
     }
 
     /// <summary>
@@ -76,16 +97,26 @@ public class SolarManager : MonoBehaviour
     /// If there isn't one, it return a position close to the sun
     /// </summary>
     /// <returns></returns>
-    public Vector3 getLastPlanetPosition()
+    float getLastPlanetDistance()
     {
-        return (solarBodies.Count == 0) ? new Vector3(0,0,200) : getLastPlanet().transform.localPosition;
+        if (solarBodies.Count == 0)
+        {
+            return 200f;
+        }
+
+        float lastPlanetDistance = getLastPlanet().transform.localPosition.z;
+
+        lastPlanetDistance += getSatelliteDistance(getLastPlanet());
+
+        return lastPlanetDistance;
     }
-    
+
     /// <summary>
     /// Gets the SolarBody farthest from the sun
     /// </summary>
     /// <returns></returns>
     SolarBody getLastPlanet() {
+        Debug.Log("+ "+solarBodies[solarBodies.Count - 1].gameObject.name);
         return solarBodies[solarBodies.Count - 1];
     }
 
@@ -96,17 +127,30 @@ public class SolarManager : MonoBehaviour
     /// <param name="parent"></param>
     public void AddSatellite(SolarBody parent)
     {
-        GameObject newBody = CreateSolarObject();
+        GameObject newBody = CreateSolarBodyObject();
 
         SolarBody newSolar = newBody.GetComponent<SolarBody>();
-        
-        newSolar.SetupSatellite(parent.transform, parent.GetOrbitSpeed() * 2);
+
+        float distanceFromSun = getLastPlanetDistance();
+        distanceFromSun += getSatelliteDistance( parent );
+
+        newSolar.Setup(distanceFromSun, parent.transform, BodyType.Moon, true);
 
         parent.AddSatellite(newSolar);
 
         SetSatelliteName(newBody, newSolar, parent);
 
-        GenerateMap(newSolar);
+        ApplyTexture(newSolar);
+    }
+
+    float getSatelliteDistance(SolarBody parent)
+    {
+        float satelliteDistance = 0f;
+
+        foreach (SolarBody satellite in parent.satellites)
+            satelliteDistance += satellite.mass + satellite.GetRadius() + 50;
+
+        return satelliteDistance;
     }
 
     /// <summary>
@@ -138,17 +182,19 @@ public class SolarManager : MonoBehaviour
     /// </summary>
     public void AddSolarBody()
     {
-        GameObject newBody = CreateSolarObject();
+        GameObject newBody = CreateSolarBodyObject();
 
         SolarBody newSolar = newBody.GetComponent<SolarBody>();
-        
-        newSolar.Setup(transform, Mathf.RoundToInt(getLastPlanetPosition().z) * 2, BodyType.Earth, 5);
+
+        float distanceFromSun = getLastPlanetDistance();
+
+        newSolar.Setup(distanceFromSun, transform, BodyType.Earth, false);
 
         solarBodies.Add(newSolar);
 
         SetPlanetName(newBody, newSolar);
 
-        GenerateMap(newSolar);
+        ApplyTexture(newSolar);
     }
 
     /// <summary>
@@ -162,7 +208,7 @@ public class SolarManager : MonoBehaviour
         newBody.name = newName;
         newSolar.name = newName;
     }
-    
+
     /// <summary>
     /// Removes the game object from each list of planets, removes their sattelites and destroys the gameobject
     /// </summary>
@@ -183,14 +229,22 @@ public class SolarManager : MonoBehaviour
     /// <returns></returns>
     public GameObject getSun()
     {
-        return sun.gameObject;
+        return (sun == null) ? GameObject.Find("Sun") : sun.gameObject;
+    }
+
+    /// <summary>
+    /// Returns a list of planets in orbit
+    /// </summary>
+    /// <returns></returns>
+    public List<SolarBody> GetSolarBodies() {
+        return (solarBodies == null)? new List<SolarBody>() : solarBodies;
     }
 
     /// <summary>
     /// Instatiates a SolarBody Prefab and sets it's parent
     /// </summary>
     /// <returns></returns>
-    GameObject CreateSolarObject()
+    GameObject CreateSolarBodyObject()
     {
         GameObject newBody = Instantiate(Resources.Load("Prefab/SolarBody", typeof(GameObject))) as GameObject;
 
@@ -198,16 +252,17 @@ public class SolarManager : MonoBehaviour
 
         return newBody;
     } 
-        /// <summary>
+        
+    /// <summary>
     /// Fetches the MapManager if it hasn't been already and
     /// calls the method to generate texture maps for the solar system
     /// </summary>
     /// <param name="solarBody"></param>
-    void GenerateMap(SolarBody solarBody)
+    void ApplyTexture(SolarBody solarBody)
     {
-        if (mapGenerator == null)
-            mapGenerator = GetComponent<MapManager>();
+        if (mapManager == null)
+            mapManager = GetComponent<MapManager>();
 
-        mapGenerator.GenerateMap(solarBody);
+        mapManager.GenerateMap(solarBody);
     }
 }
